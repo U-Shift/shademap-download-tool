@@ -60,7 +60,7 @@
     <div id='map'></div>
     <div id='loader'></div>
 
-    <dialog open id="modal-form">
+    <dialog open id="modal-keys">
         <article>
             <header>
                 <p>
@@ -68,7 +68,45 @@
                 </p>
             </header>
             <p>
-                Welcome! Ajust the form below with your parameters and click the download button to generate the TIFF file.
+                Welcome! This tool uses Mapbox and ShadeMap services, for which you need to provide API keys. <u>You can create them for free</u>.
+            </p>
+
+            <small><a href="https://docs.mapbox.com/help/getting-started/access-tokens/" target="_blank">Mapbox API key tutorial</a></small>
+            <br/>
+            <small><a href="https://shademap.app/about/#" target="_blank">Shademap API key page</a> (click on "Get API key", it will be sent to your email)</small>
+
+            <hr/>
+            
+            <div id="tiff-form">
+                <div>
+                    <small>Mapbox API key (default public token)</small>
+                    <input type="text" id="key-mapbox">
+                </div>
+
+                <div>
+                    <small>Shademap API key</small>
+                    <input type="text" id="key-shademap">
+                </div>
+            </div>
+
+            <footer>
+                <button id="key-validation">Proceed</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <dialog open id="modal-form" class="hidden">
+        <article>
+            <header>
+                <p>
+                    <strong>🗺️ ShadeMap download tool</strong>
+                </p>
+            </header>
+            <p>
+                We are all set! 🙂
+            </p>
+            <p>
+                Ajust the form below with your parameters and click the download button to generate the TIFF file.
             </p>
 
             <hr/>
@@ -145,14 +183,10 @@
 <script>
     const TILE_SIZE = 512;
     const loader = document.getElementById('loader');
+    const dialog_keys = document.getElementById('modal-keys');
     const dialog_form = document.getElementById('modal-form');
     const dialog_success = document.getElementById('modal-success');
     const dialog_error = document.getElementById('modal-error');
-
-    dialog_success.getElementsByClassName("modal-close")[0].onclick = function() {dialog_success.classList.add("hidden");}
-    dialog_error.getElementsByClassName("modal-close")[0].onclick = function() {dialog_error.classList.add("hidden");}
-
-
 
     const lng2pixel = (lng, zoom) => {
         return ((lng + 180) / 360 * Math.pow(2, zoom)) * TILE_SIZE;
@@ -316,43 +350,8 @@
         }
     }
 
-    mapboxgl.accessToken = window.MAPBOX_CRED;
-    var map = window.map = new mapboxgl.Map({
-        container: 'map',
-        zoom: 15,
-        center: {
-            lat: 38.735517, lng: -9.136205
-        },
-        style: 'mapbox://styles/mapbox/streets-v11',
-        hash: true
-    });
-
-    map.on('load', async () => {
-        const shadeMap = new ShadeMap({
-            apiKey: window.SHADEMAP_CRED,
-            date: new Date(Date.UTC(2025, 6, 21, 11, 0)), // 6:39PM EST
-            color: '#ff0000',
-            opacity: 1,
-            terrainSource: {
-                maxZoom: 25,
-                tileSize: 256,
-                getSourceUrl: ({ x, y, z }) => `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`,
-                getElevation: ({ r, g, b, a }) => (r * 256 + g + b / 256) - 32768,
-                _overzoom: 18,
-            },
-            getFeatures: async () => {
-                await SMUtils.mapLoaded(map);
-                const buildingData = map.querySourceFeatures('composite', { sourceLayer: 'building' }).filter((feature) => {
-                    return feature.properties && feature.properties.underground !== "true" && (feature.properties.height || feature.properties.render_height)
-                });
-                return buildingData;
-            },
-        }).addTo(map);
-
-        const mLoaded = SMUtils.mapLoaded(map);
-        const smLoaded = shadeMapLoaded(shadeMap);
-
-        
+    // On load
+    window.onload = function() {
         // Add default values to form 
         document.getElementById("nw-lat").value = 38.735517;
         document.getElementById("nw-lon").value = -9.136205;
@@ -361,11 +360,83 @@
         document.getElementById("timestamp").value = new Date(Date.UTC(2025, 6, 21, 11, 0)).toISOString().slice(0,16);
         document.getElementById("zoom").value = 15;
 
-        await Promise.all([mLoaded, smLoaded]);
+        if (localStorage.getItem("mapboxKey")) {
+            document.getElementById("key-mapbox").value = localStorage.getItem("mapboxKey");
+        }
+        if (localStorage.getItem("shademapKey")) {
+            document.getElementById("key-shademap").value = localStorage.getItem("shademapKey");
+        }
 
-        document.getElementById("download").disabled = false;
-        document.getElementById("download").onclick = function() {main(shadeMap)};
-    });
+        // Event binding
+        dialog_success.getElementsByClassName("modal-close")[0].onclick = function() {dialog_success.classList.add("hidden");}
+        dialog_error.getElementsByClassName("modal-close")[0].onclick = function() {dialog_error.classList.add("hidden");}
+
+        document.getElementById("key-validation").onclick = function() {
+            let mapboxKey = document.getElementById("key-mapbox").value;
+            let shademapKey = document.getElementById("key-shademap").value;
+
+            localStorage.setItem('mapboxKey', mapboxKey);
+            localStorage.setItem("shademapKey", shademapKey);
+
+            console.log("keys", mapboxKey, shademapKey);
+
+            if (!mapboxKey || !shademapKey) {
+                let message = `Invalid or missing keys!`;
+                dialog_error.getElementsByTagName("p")[0].innerHTML = message;
+                dialog_error.classList.remove("hidden");
+                throw new Error(message);
+            }
+
+            // If valid, start map and show form modal
+            dialog_form.classList.remove("hidden");
+            dialog_keys.classList.add("hidden");
+
+            // Initialize map
+            mapboxgl.accessToken = mapboxKey;
+            var map = window.map = new mapboxgl.Map({
+                container: 'map',
+                zoom: 15,
+                center: {
+                    lat: 38.735517, lng: -9.136205
+                },
+                style: 'mapbox://styles/mapbox/streets-v11',
+                hash: true
+            });
+
+            map.on('load', async () => {
+                const shadeMap = new ShadeMap({
+                    apiKey: shademapKey,
+                    date: new Date(Date.UTC(2025, 6, 21, 11, 0)), // 6:39PM EST
+                    color: '#ff0000',
+                    opacity: 1,
+                    terrainSource: {
+                        maxZoom: 25,
+                        tileSize: 256,
+                        getSourceUrl: ({ x, y, z }) => `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`,
+                        getElevation: ({ r, g, b, a }) => (r * 256 + g + b / 256) - 32768,
+                        _overzoom: 18,
+                    },
+                    getFeatures: async () => {
+                        await SMUtils.mapLoaded(map);
+                        const buildingData = map.querySourceFeatures('composite', { sourceLayer: 'building' }).filter((feature) => {
+                            return feature.properties && feature.properties.underground !== "true" && (feature.properties.height || feature.properties.render_height)
+                        });
+                        return buildingData;
+                    },
+                }).addTo(map);
+
+                const mLoaded = SMUtils.mapLoaded(map);
+                const smLoaded = shadeMapLoaded(shadeMap);
+
+                await Promise.all([mLoaded, smLoaded]);
+
+                // Once map has loaded, enable download button
+                document.getElementById("download").disabled = false;
+                document.getElementById("download").onclick = function() {main(shadeMap)};
+            });
+        }
+    }
+
 
 
 </script>
