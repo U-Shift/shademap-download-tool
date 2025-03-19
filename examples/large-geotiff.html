@@ -6,6 +6,9 @@
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css' rel='stylesheet' />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
     <style>
         body {
             margin: 0;
@@ -34,6 +37,20 @@
             text-align: center;
             line-height: 50px;
         }
+
+        dialog {
+            -webkit-transition: all 0.2s ease-in-out 0s;
+            -moz-transition: all 0.2s ease-in-out 0s;
+            -ms-transition: all 0.2s ease-in-out 0s;
+            transition: all 0.2s ease-in-out 0s;
+
+            opacity: 1;
+            visibility: visible;
+        }
+        dialog.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
     </style>
 </head>
 
@@ -42,6 +59,83 @@
 <body>
     <div id='map'></div>
     <div id='loader'></div>
+
+    <dialog open id="modal-form">
+        <article>
+            <header>
+                <p>
+                    <strong>🗺️ ShadeMap download tool</strong>
+                </p>
+            </header>
+            <p>
+                Welcome! Ajust the form below with your parameters and click the download button to generate the TIFF file.
+            </p>
+
+            <hr/>
+            <u class="small">
+                The TIFF is generated over a square area, defined with the north-west and south-east corners coordinates, for a specic date and time, with the level of detail specified by the zoom level.
+            </u>
+            <br/><br/>
+            
+            <div id="tiff-form">
+                <div>
+                    <small>North-west corner latitude</small>
+                    <input type="number" name="number" id="nw-lat">
+                </div>
+
+                <div>
+                    <small>North-west corner longitude</small>
+                    <input type="number" name="number" id="nw-lon">
+                </div>
+
+                <div>
+                    <small>Shouth-east corner latitude</small>
+                    <input type="number" name="number" id="se-lat">
+                </div>
+
+                <div>
+                    <small>South-east corner longitude</small>
+                    <input type="number" name="number" id="se-lon">
+                </div>
+                
+                <div>
+                    <small>Timestamp to consider (UTC)</small>
+                    <input type="datetime" name="datetime" id="timestamp">
+                </div>
+
+                <div>
+                    <small>Zoom level</small>
+                    <input type="number" name="number" id="zoom">
+                </div>
+            </div>
+
+            <footer>
+                <button disabled id="download">Download TIFF</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <dialog open id="modal-success" class="hidden">
+        <article>
+          <h2>✅ Success!</h2>
+          <p>
+            Your TIFF file was generated successfully!
+          </p>
+          <footer>
+            <button class="secondary modal-close">Go back to form</button>
+          </footer>
+        </article>
+      </dialog>
+
+      <dialog open id="modal-error" class="hidden">
+        <article>
+          <h2>⚠️ There was an error!</h2>
+          <p></p>
+          <footer>
+            <button class="secondary modal-close">Go back to form</button>
+          </footer>
+        </article>
+      </dialog>
 </body>
 <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 <script src='https://www.unpkg.com/mapbox-gl-shadow-simulator/dist/mapbox-gl-shadow-simulator.umd.min.js'></script>
@@ -50,7 +144,15 @@
 <script src="./utils.js"></script>
 <script>
     const TILE_SIZE = 512;
-    const BUILDING_ZOOM = 15;
+    const loader = document.getElementById('loader');
+    const dialog_form = document.getElementById('modal-form');
+    const dialog_success = document.getElementById('modal-success');
+    const dialog_error = document.getElementById('modal-error');
+
+    dialog_success.getElementsByClassName("modal-close")[0].onclick = function() {dialog_success.classList.add("hidden");}
+    dialog_error.getElementsByClassName("modal-close")[0].onclick = function() {dialog_error.classList.add("hidden");}
+
+
 
     const lng2pixel = (lng, zoom) => {
         return ((lng + 180) / 360 * Math.pow(2, zoom)) * TILE_SIZE;
@@ -71,10 +173,7 @@
         });
     };
 
-    const loader = document.getElementById('loader');
-
-    const worldSize = TILE_SIZE * 2 ** BUILDING_ZOOM;
-    function roundToScreenSize(nw, se) {
+    function roundToScreenSize(nw, se, worldSize) {
 
         const nwM = mapboxgl.MercatorCoordinate.fromLngLat({ lng: nw[1], lat: nw[0] });
         const seM = mapboxgl.MercatorCoordinate.fromLngLat({ lng: se[1], lat: se[0] });
@@ -102,43 +201,9 @@
 
     }
 
-    // Washington DC north
-    // const nw = [38.895862, -77.120127];
-    // const se = [38.792226, -76.910423];
-
-    // Washginton DC south
-    // const nw = [38.985862, -77.120127];
-    // const se = [38.895862, -76.910423];
-
-    // test coords
-    let nw = [38.815862, -76.930127];
-    let se = [38.792226, -76.910423];
-
-    const { innerWidth, innerHeight } = window;
-    const [xMin, yMin] = unproject(nw, BUILDING_ZOOM);
-    const [xMax, yMax] = unproject(se, BUILDING_ZOOM);
-
-    const { width, height, wScreens, hScreens, newSE } = roundToScreenSize(nw, se);
-    se[0] = newSE.lat;
-    se[1] = newSE.lng;
-
-    const MAX_ARRAY_SIZE = 2 ** 26;
-    const pixels = width * height;
-    console.log(pixels, MAX_ARRAY_SIZE);
-    if (pixels > MAX_ARRAY_SIZE) {
-        throw new Error(`Bounds to large to process, reduce area by ${Math.ceil((pixels - MAX_ARRAY_SIZE) / MAX_ARRAY_SIZE * 100)}`);
-    }
-
-    const screens = [];
-    for (let i = 0; i < wScreens; i++) {
-        for (let j = 0; j < hScreens; j++) {
-            screens.push([xMin + i * innerWidth, yMin + j * innerHeight]);
-        }
-    }
-
-    async function loadScreen(shadeMap, coords) {
+    async function loadScreen(shadeMap, coords, zoom, worldSize) {
         const [x, y] = coords;
-        map.setZoom(BUILDING_ZOOM);
+        map.setZoom(zoom);
         const mercX = (x + innerWidth / 2) / worldSize;
         const mercY = (y + innerHeight / 2) / worldSize;
         const merc = new mapboxgl.MercatorCoordinate(mercX, mercY, 0);
@@ -150,7 +215,7 @@
         return;
     }
 
-    async function download(data) {
+    async function download(data, nw, se, width, height) {
         const ModelTiepoint = [0, 0, 0, nw[1], nw[0], 0];
         const ModelPixelScale = [(se[1] - nw[1]) / width, (nw[0] - se[0]) / height, 0];
         const metadata = {
@@ -182,13 +247,52 @@
         document.body.removeChild(link);
     }
 
-    async function main(shadeMap, screens) {
+    async function main(shadeMap) {
+        // Show loader and hide modal
+        dialog_form.classList.add("hidden");
         loader.style.display = `block`;
+
+        // Compute parameters
+        let zoom = parseFloat(document.getElementById("zoom").value);
+        let nw = [parseFloat(document.getElementById("nw-lat").value), parseFloat(document.getElementById("nw-lon").value)];
+        let se = [parseFloat(document.getElementById("se-lat").value), parseFloat(document.getElementById("se-lon").value)];
+        let timestamp = new Date(document.getElementById("timestamp").value);
+        
+        // Derived parameters
+        const worldSize = TILE_SIZE * 2 ** zoom;
+
+        const { innerWidth, innerHeight } = window;
+        const [xMin, yMin] = unproject(nw, zoom);
+        const [xMax, yMax] = unproject(se, zoom);
+
+        const { width, height, wScreens, hScreens, newSE } = roundToScreenSize(nw, se, worldSize);
+        se[0] = newSE.lat;
+        se[1] = newSE.lng;
+
+        const MAX_ARRAY_SIZE = 2 ** 26;
+        // TODO! When exceeds, reduce size
+        const pixels = width * height;
+        console.log(pixels, MAX_ARRAY_SIZE);
+        if (pixels > MAX_ARRAY_SIZE) {
+            let message = `Bounds to large to process, reduce area by ${Math.ceil((pixels - MAX_ARRAY_SIZE) / MAX_ARRAY_SIZE * 100)}`;
+            dialog_error.getElementsByTagName("p")[0].innerHTML = message;
+            dialog_error.classList.remove("hidden");
+            throw new Error(message);
+        }
+
+        let screens = [];
+        for (let i = 0; i < wScreens; i++) {
+            for (let j = 0; j < hScreens; j++) {
+                screens.push([xMin + i * innerWidth, yMin + j * innerHeight]);
+            }
+        }
+
+        // Proceed with download
         const bitmap = new Uint8Array(width * height);
         for (let i = 0; i < screens.length; i++) {
             loader.innerText = `${(i / screens.length * 100).toFixed(0)}%`;
             console.log(`loading screen ${i}`);
-            await loadScreen(shadeMap, screens[i]);
+            await loadScreen(shadeMap, screens[i], zoom, worldSize);
             await new Promise((res, rej) => {
                 setTimeout(res, 1000);
             });
@@ -196,8 +300,12 @@
             const [x, y] = screens[i];
             copy(data, bitmap, innerWidth, innerHeight, x - xMin, y - yMin, width, height);
         }
-        download(bitmap);
+        download(bitmap, nw, se, width, height);
+
+        // Display success 
         loader.style.display = `none`;
+        dialog_form.classList.remove("hidden");
+        dialog_success.classList.remove("hidden");
     }
 
     async function copy(source, destination, sw, sh, dx, dy, dw, dh) {
@@ -211,9 +319,9 @@
     mapboxgl.accessToken = window.MAPBOX_CRED;
     var map = window.map = new mapboxgl.Map({
         container: 'map',
-        zoom: BUILDING_ZOOM,
+        zoom: 15,
         center: {
-            lat: nw[0], lng: nw[1]
+            lat: 38.735517, lng: -9.136205
         },
         style: 'mapbox://styles/mapbox/streets-v11',
         hash: true
@@ -222,11 +330,11 @@
     map.on('load', async () => {
         const shadeMap = new ShadeMap({
             apiKey: window.SHADEMAP_CRED,
-            date: new Date(1682455188037 + 2 * 60 * 60 * 1000), // 6:39PM EST
+            date: new Date(Date.UTC(2025, 6, 21, 11, 0)), // 6:39PM EST
             color: '#ff0000',
             opacity: 1,
             terrainSource: {
-                maxZoom: 15,
+                maxZoom: 25,
                 tileSize: 256,
                 getSourceUrl: ({ x, y, z }) => `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`,
                 getElevation: ({ r, g, b, a }) => (r * 256 + g + b / 256) - 32768,
@@ -244,8 +352,19 @@
         const mLoaded = SMUtils.mapLoaded(map);
         const smLoaded = shadeMapLoaded(shadeMap);
 
+        
+        // Add default values to form 
+        document.getElementById("nw-lat").value = 38.735517;
+        document.getElementById("nw-lon").value = -9.136205;
+        document.getElementById("se-lat").value = 38.726796;
+        document.getElementById("se-lon").value = -9.117215;
+        document.getElementById("timestamp").value = new Date(Date.UTC(2025, 6, 21, 11, 0)).toISOString().slice(0,16);
+        document.getElementById("zoom").value = 15;
+
         await Promise.all([mLoaded, smLoaded]);
-        await main(shadeMap, screens);
+
+        document.getElementById("download").disabled = false;
+        document.getElementById("download").onclick = function() {main(shadeMap)};
     });
 
 
