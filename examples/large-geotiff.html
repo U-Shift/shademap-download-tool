@@ -451,7 +451,7 @@
                 copy(
                     data, bitmap, // Data parameters
                     innerWidth, innerHeight, // Screen width and height (px)
-                    x - xMin - (((xMax-xMin)/batchCols)*batch['colStart']), y - yMin - (((yMax-yMin)/batchRows)*batch['rowStart']), // Coordinates withint bitmap (width batchCols*batchRows cells)
+                    x - xMin, y - yMin, // Coordinates withint bitmap (width batchCols*batchRows cells)
                     (width/cols)*batchCols, (height/rows)*batchRows // Area width and height (px)
                 );
             }
