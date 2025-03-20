@@ -369,7 +369,7 @@
         // Divide screens array into several batches, making sure each does not exceed MAX_ARRAY_SIZE
         // AND if changes column, must cover same rows as the previous (to avoid black areas, since the generated TIFF is a square)
         // Each batch will produce a TIFF file
-        const MAX_ARRAY_SIZE = 2 ** 26 / 10;
+        const MAX_ARRAY_SIZE = 2 ** 26;
         const windowPixels = innerHeight * innerWidth; // Pixels that the browser window covers
         const areaPixels = width * height; // Pixels covered by the area to export
         const rows = Math.ceil(height / innerHeight); // Number of sheets rows
