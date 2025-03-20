@@ -25,17 +25,21 @@
         #loader {
             display: none;
             position: absolute;
-            width: 50px;
-            height: 50px;
-            top: 50%;
-            left: 50%;
-            margin: 0 0 -25px -25px;
             z-index: 9999;
-            border-radius: 50%;
             background-color: gray;
             color: white;
             text-align: center;
             line-height: 50px;
+
+            width: 45%;
+            height: auto;
+            top: 42.5%;
+            left: 27.5%;
+            border-radius: 8px;
+            padding: 8px;
+        }
+        #loader p {
+            margin: 0;
         }
 
         dialog {
@@ -58,7 +62,11 @@
 
 <body>
     <div id='map'></div>
-    <div id='loader'></div>
+    <div id='loader'>
+        <p>0%</p>
+        <progress value="0" max="100"></progress>
+        <small></small>
+    </div>
 
     <dialog open id="modal-keys">
         <article>
@@ -145,6 +153,11 @@
                     <small>Zoom level</small>
                     <input type="number" name="number" id="zoom">
                 </div>
+
+                <div>
+                    <small>Filename (defaults to stitch)</small>
+                    <input type="text" id="filename">
+                </div>
             </div>
 
             <footer>
@@ -156,9 +169,7 @@
     <dialog open id="modal-success" class="hidden">
         <article>
           <h2>✅ Success!</h2>
-          <p>
-            Your TIFF file was generated successfully!
-          </p>
+          <p></p>
           <footer>
             <button class="secondary modal-close">Go back to form</button>
           </footer>
@@ -207,7 +218,7 @@
         });
     };
 
-    function roundToScreenSize(nw, se, worldSize) {
+    function roundToScreenSize(innerWidth, innerHeight, nw, se, worldSize) {
 
         const nwM = mapboxgl.MercatorCoordinate.fromLngLat({ lng: nw[1], lat: nw[0] });
         const seM = mapboxgl.MercatorCoordinate.fromLngLat({ lng: se[1], lat: se[0] });
@@ -249,9 +260,11 @@
         return;
     }
 
-    async function download(data, nw, se, width, height) {
+    async function download(data, nw, se, width, height, subarea) {
         const ModelTiepoint = [0, 0, 0, nw[1], nw[0], 0];
         const ModelPixelScale = [(se[1] - nw[1]) / width, (nw[0] - se[0]) / height, 0];
+        console.log("ModelTiepoint", ModelTiepoint);
+        console.log("ModelPixelScale", ModelPixelScale);
         const metadata = {
             width,
             height,
@@ -262,10 +275,12 @@
             GeogCitationGeoKey: 'WGS 84',
         };
         console.log(data.length);
+        console.log("Starting GeoTIFF.writeArrayBuffer...");
         const arrayBuffer = await GeoTIFF.writeArrayBuffer(
             Array.from(data),
             metadata
         );
+        console.log("GeoTIFF.writeArrayBuffer finished.");
         const typedArray = new Uint8Array(arrayBuffer);
         const charCode = typedArray.reduce((all, char) => {
             return (all += String.fromCharCode(char));
@@ -275,13 +290,21 @@
 
         const link = document.createElement("a");
         link.href = datauri;
-        link.download = 'stitch.tiff'
+
+        let filename = document.getElementById("filename").value;
+        if (!filename) filename = "stitch";
+        let append = "";
+        if (subarea) append = `_part${subarea}`
+        link.download = `${filename}${append}.tiff`
+
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     }
 
     async function main(shadeMap) {
+
         // Show loader and hide modal
         dialog_form.classList.add("hidden");
         loader.style.display = `block`;
@@ -299,46 +322,81 @@
         const [xMin, yMin] = unproject(nw, zoom);
         const [xMax, yMax] = unproject(se, zoom);
 
-        const { width, height, wScreens, hScreens, newSE } = roundToScreenSize(nw, se, worldSize);
+        const { width, height, wScreens, hScreens, newSE } = roundToScreenSize(innerWidth, innerHeight, nw, se, worldSize);
         se[0] = newSE.lat;
         se[1] = newSE.lng;
 
-        const MAX_ARRAY_SIZE = 2 ** 26;
-        // TODO! When exceeds, reduce size
-        const pixels = width * height;
-        console.log(pixels, MAX_ARRAY_SIZE);
-        if (pixels > MAX_ARRAY_SIZE) {
-            let message = `Bounds to large to process, reduce area by ${Math.ceil((pixels - MAX_ARRAY_SIZE) / MAX_ARRAY_SIZE * 100)}`;
-            dialog_error.getElementsByTagName("p")[0].innerHTML = message;
-            dialog_error.classList.remove("hidden");
-            throw new Error(message);
-        }
+        console.log("inner width x height", innerWidth, innerHeight);
+        console.log("width x height", width, height);
+        console.log("screens", wScreens, hScreens);
 
-        let screens = [];
+        let screensGlobal = [];
         for (let i = 0; i < wScreens; i++) {
             for (let j = 0; j < hScreens; j++) {
-                screens.push([xMin + i * innerWidth, yMin + j * innerHeight]);
+                screensGlobal.push([xMin + i * innerWidth, yMin + j * innerHeight]);
             }
         }
+        console.log("screens", screensGlobal);
 
-        // Proceed with download
-        const bitmap = new Uint8Array(width * height);
-        for (let i = 0; i < screens.length; i++) {
-            loader.innerText = `${(i / screens.length * 100).toFixed(0)}%`;
-            console.log(`loading screen ${i}`);
-            await loadScreen(shadeMap, screens[i], zoom, worldSize);
-            await new Promise((res, rej) => {
-                setTimeout(res, 1000);
-            });
-            const { data } = shadeMap.toGeoTiff();
-            const [x, y] = screens[i];
-            copy(data, bitmap, innerWidth, innerHeight, x - xMin, y - yMin, width, height);
+        // Divide screens array into several batches, making sure each does not exceed MAX_ARRAY_SIZE
+        // Each batch will produce a TIFF file
+        const MAX_ARRAY_SIZE = 2 ** 26 / 10;
+        const windowPixels = innerHeight * innerWidth; // Pixels that the browser window covers
+        const areaPixels = width * height; // Pixels covered by the area to export
+
+        let screensBatches = [];
+        let batchesNumber = Math.ceil(areaPixels/MAX_ARRAY_SIZE);
+        let screensIndex = 0;
+        console.log("Generating", batchesNumber, "batches");
+
+        for (let i=0; i<batchesNumber; i++) {
+            let batchPixels = 0;
+            let batch = [];
+            while (screensIndex<screensGlobal.length && batchPixels<MAX_ARRAY_SIZE) {
+                batch.push(screensGlobal[screensIndex]);
+                batchPixels += windowPixels;
+                screensIndex += 1;
+            }
+            screensBatches.push(batch);
         }
-        download(bitmap, nw, se, width, height);
+        console.log("screensBatches", screensBatches);
+
+        // For each batch, generate TIFF
+        for (let b=0; b<screensBatches.length; b++) {
+            let screens = screensBatches[b];
+            // Proceed with download
+            console.log("Processing batch", b);
+            const bitmap = new Uint8Array(width * height);
+            for (let i = 0; i < screens.length; i++) {
+                console.log("> Processing screen", i, "of", screens.length);
+                
+                let progress =  (i / screens.length / screensBatches.length * 100).toFixed(0);
+                loader.getElementsByTagName("p")[0].innerHTML = `${progress}%`;
+                loader.getElementsByTagName("progress")[0].value = progress;
+                loader.getElementsByTagName("small")[0].innerHTML = `Analysing screen ${i+1}/${screens.length}, of screen batch ${b+1}/${screensBatches.length}`;
+                
+                console.log(`loading screen ${i}`);
+                await loadScreen(shadeMap, screens[i], zoom, worldSize);
+                await new Promise((res, rej) => {
+                    setTimeout(res, 1000);
+                });
+                const { data } = shadeMap.toGeoTiff();
+                const [x, y] = screens[i];
+                copy(data, bitmap, innerWidth, innerHeight, x - xMin, y - yMin, width, height);
+            }
+            console.log("FINISHED batch", b, "downloading...");
+            await download(bitmap, nw, se, width, height, screensBatches.length>1 ? b+1 : undefined);
+            console.log("FINISHED downloading!");
+        }
 
         // Display success 
         loader.style.display = `none`;
         dialog_form.classList.remove("hidden");
+        dialog_success.getElementsByTagName("p")[0].innerHTML = "Your TIFF file was generated successfully!";
+        if (screensBatches.length>1) {
+            dialog_success.getElementsByTagName("p")[0].innerHTML += `<br/><br/>The wideness of the area selected exceeds the browser processing capabilities. Do overcome this, it was divided into ${screensBatches.length} smaller and complementar areas, each corresponding to one TIFF file downloaded.`
+        }
+        
         dialog_success.classList.remove("hidden");
     }
 
@@ -359,6 +417,7 @@
         document.getElementById("se-lon").value = -9.117215;
         document.getElementById("timestamp").value = new Date(Date.UTC(2025, 6, 21, 11, 0)).toISOString().slice(0,16);
         document.getElementById("zoom").value = 15;
+        document.getElementById("filename").value = "stitch";
 
         if (localStorage.getItem("mapboxKey")) {
             document.getElementById("key-mapbox").value = localStorage.getItem("mapboxKey");
