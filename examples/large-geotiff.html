@@ -52,7 +52,7 @@
             max-height: 85vh;
             overflow: scroll;
 
-            min-width: 25%;
+            width: 35%;
             max-width: 35%;
             background-color: white;
             border-radius: 8px;
@@ -112,33 +112,33 @@
                 <div>
                     <small>North-West corner coordinates (latitude, longitude)</small>
                     <fieldset role="group">
-                        <input type="number" name="number" id="nw-lat">
-                        <input type="number" name="number" id="nw-lon">
+                        <input type="number" name="number" id="nw-lat" placeholder="Latitude">
+                        <input type="number" name="number" id="nw-lon" placeholder="Longitude">
                     </fieldset>
                 </div>
 
                 <div>
                     <small>Shouth-East corner coordinates (latitude, longitude)</small>
                     <fieldset role="group">
-                        <input type="number" name="number" id="se-lat">
-                        <input type="number" name="number" id="se-lon">
+                        <input type="number" name="number" id="se-lat" placeholder="Latitude">
+                        <input type="number" name="number" id="se-lon" placeholder="Longitude">
                     </fieldset>
                 </div>
 
                 <div>
                     <small>Date(s) to consider (YYYY-MM-DD, separated by comma)</small>
-                    <input type="text" id="dates">
+                    <input type="text" id="dates" placeholder="YYYY-MM-DD">
                 </div>
 
                 <div>
                     <fieldset role="group">
                         <div>
                             <small>File name (defaults to stitch)</small>
-                            <input type="text" id="filename">
+                            <input type="text" id="filename" placeholder="Default: stitch">
                         </div>
                         <div>
                             <small>Zoom level</small>
-                            <input type="number" name="number" id="zoom">
+                            <input type="number" name="number" id="zoom" placeholder="Default: 15">
                         </div>
                     </fieldset>
                 </div>
@@ -149,20 +149,28 @@
 
                     <div>
                         <small>Hour(s) to consider (UTC) (HH:MM, separated by comma)</small>
-                        <input type="text" id="hours">
+                        <input type="text" id="hours" placeholder="HH:MM">
                     </div>
 
-                    
+
                 </details>
 
                 <hr />
 
                 <details name="layer" id="layer-sun">
                     <summary>☀️ Sun exposure</summary>
-                    <ul>
-                        <li>...</li>
-                        <li>...</li>
-                    </ul>
+                    <div>
+                        <small>Interval to consider (UTC) (HH:MM)</small>
+                        <fieldset role="group">
+                            <input type="text" id="hour-start" placeholder="Start (HH:MM)">
+                            <input type="text" id="hour-end" placeholder="End (HH:MM)">
+                        </fieldset>
+                    </div>
+
+                    <div>
+                        <small>Iterations (see help for ℹ️)</small>
+                        <input type="number" id="iterations" placeholder="Default: 32">
+                    </div>
                 </details>
 
                 <footer style="padding-top: 32px;">
@@ -198,12 +206,12 @@
             <div>
                 <div>
                     <small>Mapbox API key (default public token)</small>
-                    <input type="text" id="key-mapbox">
+                    <input type="text" id="key-mapbox" placeholder="Your API key">
                 </div>
 
                 <div>
                     <small>Shademap API key</small>
-                    <input type="text" id="key-shademap">
+                    <input type="text" id="key-shademap" placeholder="Your API key">
                 </div>
             </div>
 
@@ -232,7 +240,14 @@
                     coordinates, for a specic date and time, with the level of detail specified by the zoom level.
                 </dd>
             </dl>
-
+            <dl>
+                <dt>
+                    <b>What are the iteractions parameter, on  the sun exposure form?</b>
+                </dt>
+                <dd>
+                    According to the ShadeMap documentation: "Number of discrete chunks to calculate shadows for between startDate and endDate. A larger number will provide more detail but take longer to compute."
+                </dd>
+            </dl>
             <dl>
                 <dt>
                     <b>What is the coordinate reference of the file generated? </b>
@@ -241,7 +256,6 @@
                     The file is generated according to the WGS 84 coordinate reference system (EPSG:4326).
                 </dd>
             </dl>
-
             <dl>
                 <dt>
                     <b>How can I interpret the values of the file generated?</b>
@@ -253,6 +267,7 @@
                             sun exposure by multiplying this value by 6.</li>
                     </ul>
                 </dd>
+                
             </dl>
 
             <footer>
@@ -341,7 +356,7 @@
                 startDate: new Date(Date.UTC(2025, 6, 21, 8, 0)),
                 endDate: new Date(Date.UTC(2025, 6, 21, 18, 0)),
                 iterations: 32
-            } : {enabled: false},
+            } : { enabled: false },
             getFeatures: async () => {
                 await SMUtils.mapLoaded(map);
                 const buildingData = map.querySourceFeatures('composite', { sourceLayer: 'building' }).filter((feature) => {
@@ -402,11 +417,14 @@
         return Math.abs(a) + Math.abs(b)
     }
 
+    const pad = (num) => String(num).padStart(2, '0');
+    const getDateString = (timestamp) => `${timestamp.getFullYear()}${pad(timestamp.getMonth() + 1)}${pad(timestamp.getDate())}_${pad(timestamp.getHours())}${pad(timestamp.getMinutes())}${pad(timestamp.getSeconds())}`
+
     async function download(
         data, // Exported data to download
         nw, se, width, height, cols, rows, // Area global values
         batchCols, batchRows, colStart, rowStart, colEnd, rowEnd, // Sheet batch information
-        timestamp, // Timestamp is added to file name
+        timestamp, // Timestamp is added to file name (list or instance)
         subarea // Subarea number for file name purposes
     ) {
 
@@ -427,8 +445,6 @@
 
         console.log("ModelTiepoint", ModelTiepoint);
         console.log("ModelPixelScale", ModelPixelScale);
-
-        const pad = (num) => String(num).padStart(2, '0');
 
         const metadata = {
             width: (width / cols) * batchCols,
@@ -458,7 +474,7 @@
 
         let filename = document.getElementById("filename").value;
         if (!filename) filename = "stitch";
-        let append = `_${timestamp.getFullYear()}${pad(timestamp.getMonth() + 1)}${pad(timestamp.getDate())}_${pad(timestamp.getHours())}${pad(timestamp.getMinutes())}${pad(timestamp.getSeconds())}`;
+        let append = Array.isArray(timestamp) ? `_${getDateString(timestamp[0])}_${getDateString(timestamp[1])}` : `_${getDateString(timestamp)}`;
         if (subarea) append = `_part${subarea}`
         link.download = `${filename}${append}.tiff`
 
@@ -470,26 +486,38 @@
 
     async function main(shadeMap) {
 
-        // Show loader and hide modal
-        div_panel.classList.add("hidden");
-        loader.style.display = `block`;
-
         // Compute parameters
-        let zoom = parseFloat(document.getElementById("zoom").value);
-        let nw = [parseFloat(document.getElementById("nw-lat").value), parseFloat(document.getElementById("nw-lon").value)];
-        let se = [parseFloat(document.getElementById("se-lat").value), parseFloat(document.getElementById("se-lon").value)];
+        let zoom = parseFloat(document.getElementById("zoom").value.trim());
+        let nw = [parseFloat(document.getElementById("nw-lat").value.trim()), parseFloat(document.getElementById("nw-lon").value.trim())];
+        let se = [parseFloat(document.getElementById("se-lat").value.trim()), parseFloat(document.getElementById("se-lon").value.trim())];
+        let iterations = parseInt(document.getElementById("iterations").value.trim());
 
         let dates = document.getElementById("dates").value.split(/,|;| /).map(v => v.trim()).filter(v => !!v);
-        let hours = document.getElementById("hours").value.split(/,|;| /).map(v => v.trim()).filter(v => !!v);
-        let timestamps = dates.map(d => hours.map(h => new Date(`${d}T${h}`))).flat(1);
+        let timestamps = [];
+        if (CURRENT_LAYER === LAYER_SHADOW) {
+            let hours = document.getElementById("hours").value.split(/,|;| /).map(v => v.trim()).filter(v => !!v);
+            if (hours.length && dates.length) {
+                timestamps = dates.map(d => hours.map(h => new Date(`${d}T${h}`))).flat(1);
+            }
+        } else { // LAYER_SUN
+            let hour_start = document.getElementById("hour-start").value.trim();
+            let hour_end = document.getElementById("hour-end").value.trim();
+            if (dates.length && !!hour_start && !!hour_end) {
+                timestamps = dates.map(d => [new Date(`${d}T${hour_start}`), new Date(`${d}T${hour_end}`)])
+            }
+        }
 
         // Validate if there is any missing
-        if (!zoom || !nw.every(v => !!v) || !se.every(v => !!v) || !dates.length || !hours.length) {
+        if (!zoom || !nw.every(v => !!v) || !se.every(v => !!v) || !timestamps.length || !iterations) {
             let message = `Invalid parameters!`;
             dialog_error.getElementsByTagName("p")[0].innerHTML = message;
             dialog_error.classList.remove("hidden");
             throw new Error(message);
         }
+
+        // Show loader and hide modal
+        div_panel.classList.add("hidden");
+        loader.style.display = `block`;
 
         // Derived parameters
         const worldSize = TILE_SIZE * 2 ** zoom;
@@ -572,7 +600,15 @@
         for (let ti = 0; ti < timestamps.length; ti++) {
             let timestamp = timestamps[ti];
 
-            shadeMap.options.date = timestamp;
+            if (CURRENT_LAYER === LAYER_SHADOW) {
+                shadeMap.options.date = timestamp;
+            } else { // LAYER_SUN
+                shadeMap.options.date = timestamp[0];
+                shadeMap.options.sunExposure.startDate = timestamp[0];
+                shadeMap.options.sunExposure.endDate = timestamp[1];
+                shadeMap.options.sunExposure.iterations = iterations;
+            }
+
             console.log("TIMESTAMP", timestamp, "shademap", shadeMap.options);
             // TODO! Change timestamp inside shademap
 
@@ -655,6 +691,9 @@
         document.getElementById("se-lon").value = -9.117215;
         document.getElementById("dates").value = "2025-06-21";
         document.getElementById("hours").value = "12:00";
+        document.getElementById("hour-start").value = "06:00";
+        document.getElementById("hour-end").value = "18:00";
+        document.getElementById("iterations").value = 32;
         document.getElementById("zoom").value = 15;
         document.getElementById("filename").value = "stitch";
 
