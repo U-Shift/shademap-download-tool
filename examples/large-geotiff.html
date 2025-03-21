@@ -30,7 +30,7 @@
             color: #363636;
             text-align: center;
             line-height: 50px;
-            
+
             width: 45%;
             height: auto;
             top: 42.5%;
@@ -58,7 +58,14 @@
             border-radius: 8px;
         }
 
-        dialog, #panel {
+        #panel article {
+            margin: 0;
+            box-shadow: none;
+        }
+
+        dialog,
+        #panel,
+        #form {
             -webkit-transition: all 0.2s ease-in-out 0s;
             -moz-transition: all 0.2s ease-in-out 0s;
             -ms-transition: all 0.2s ease-in-out 0s;
@@ -68,7 +75,9 @@
             visibility: visible;
         }
 
-        dialog.hidden, #panel.hidden {
+        dialog.hidden,
+        #panel.hidden,
+        #form.hidden {
             opacity: 0;
             visibility: hidden;
         }
@@ -94,67 +103,74 @@
                     <small style="margin-left: auto;"><a href="#" id="help-modal">ℹ️ Help</a></small>
                 </p>
                 <small>
-                    Adjust the parameters and choose the layer you want to export before downloading.
+                    Loading map...
                 </small>
             </header>
 
-            <!-- Common parameters-->
-            <div>
-                <small>North-West corner coordinates (latitude, longitude)</small>
-                <fieldset role="group">
-                    <input type="number" name="number" id="nw-lat">
-                    <input type="number" name="number" id="nw-lon">
-                </fieldset>
-            </div>
-
-            <div>
-                <small>Shouth-East corner coordinates (latitude, longitude)</small>
-                <fieldset role="group">
-                    <input type="number" name="number" id="se-lat">
-                    <input type="number" name="number" id="se-lon">
-                </fieldset>
-            </div>
-            
-            <div>
-                <small>Date(s) to consider (YYYY-MM-DD, separated by comma)</small>
-                <input type="text" id="dates">
-            </div>
-
-            <div>
-                <small>Filename (defaults to stitch)</small>
-                <input type="text" id="filename">
-            </div>
-
-            <!-- Layer specific forms-->
-            <details name="example" open>
-                <summary>🌇 Shadows</summary>
-                
+            <div id="form" class="hidden" style="display: none;">
+                <!-- Common parameters-->
                 <div>
-                    <small>Hour(s) to consider (UTC) (HH:MM, separated by comma)</small>
-                    <input type="text" id="hours">
+                    <small>North-West corner coordinates (latitude, longitude)</small>
+                    <fieldset role="group">
+                        <input type="number" name="number" id="nw-lat">
+                        <input type="number" name="number" id="nw-lon">
+                    </fieldset>
                 </div>
 
                 <div>
-                    <small>Zoom level</small>
-                    <input type="number" name="number" id="zoom">
+                    <small>Shouth-East corner coordinates (latitude, longitude)</small>
+                    <fieldset role="group">
+                        <input type="number" name="number" id="se-lat">
+                        <input type="number" name="number" id="se-lon">
+                    </fieldset>
                 </div>
-            </details>
 
-            <hr />
-
-            <details name="example">
-                <summary>☀️ Sun exposure</summary>
-                <ul>
-                    <li>...</li>
-                    <li>...</li>
-                </ul>
-            </details>
-
-            <footer>
-                <div role="group">
-                    <button id="download" disabled>Loading map...</button>
+                <div>
+                    <small>Date(s) to consider (YYYY-MM-DD, separated by comma)</small>
+                    <input type="text" id="dates">
                 </div>
-            </footer>
+
+                <div>
+                    <fieldset role="group">
+                        <div>
+                            <small>File name (defaults to stitch)</small>
+                            <input type="text" id="filename">
+                        </div>
+                        <div>
+                            <small>Zoom level</small>
+                            <input type="number" name="number" id="zoom">
+                        </div>
+                    </fieldset>
+                </div>
+
+                <!-- Layer specific forms-->
+                <details name="layer" id="layer-shadow" open>
+                    <summary>🌇 Shadows</summary>
+
+                    <div>
+                        <small>Hour(s) to consider (UTC) (HH:MM, separated by comma)</small>
+                        <input type="text" id="hours">
+                    </div>
+
+                    
+                </details>
+
+                <hr />
+
+                <details name="layer" id="layer-sun">
+                    <summary>☀️ Sun exposure</summary>
+                    <ul>
+                        <li>...</li>
+                        <li>...</li>
+                    </ul>
+                </details>
+
+                <footer style="padding-top: 32px;">
+                    <div role="group">
+                        <button id="download" disabled>Loading map...</button>
+                    </div>
+                </footer>
+            </div>
         </article>
     </div>
 
@@ -212,14 +228,14 @@
                     <b>What are the NW and SE coordinates for?</b>
                 </dt>
                 <dd>
-                    The TIFF is generated over a square area, defined with the north-west and south-east corners
+                    The export is generated over a square area, defined with the north-west and south-east corners
                     coordinates, for a specic date and time, with the level of detail specified by the zoom level.
                 </dd>
             </dl>
 
             <dl>
                 <dt>
-                    <b>What is the coordinate reference of the TIFF file generated? </b>
+                    <b>What is the coordinate reference of the file generated? </b>
                 </dt>
                 <dd>
                     The file is generated according to the WGS 84 coordinate reference system (EPSG:4326).
@@ -228,16 +244,17 @@
 
             <dl>
                 <dt>
-                    <b>How can I interpret the values of the TIFF file generated?</b>
+                    <b>How can I interpret the values of the file generated?</b>
                 </dt>
                 <dd>
                     <ul>
                         <li>Shadows are exported in a binary system: 0 for shadows, 255 for sun.</li>
-                        <li>Sun light exposure values range from 0 to 240, and can be converted to the total minutes of sun exposure by multiplying this value by 6.</li>
+                        <li>Sun light exposure values range from 0 to 240, and can be converted to the total minutes of
+                            sun exposure by multiplying this value by 6.</li>
                     </ul>
                 </dd>
             </dl>
-            
+
             <footer>
                 <div role="group">
                     <button class="secondary outline modal-close">Go back</button>
@@ -277,10 +294,13 @@
 <script src="./utils.js"></script>
 <script>
     const TILE_SIZE = 512;
+    const LAYER_SHADOW = "layer-shadow";
+    const LAYER_SUN = "layer-sun";
+    let CURRENT_LAYER = LAYER_SHADOW;
     const loader = document.getElementById('loader');
     const dialog_keys = document.getElementById('modal-keys');
     const div_panel = document.getElementById('panel'); // TODO! Delete
-    const dialog_help = document.getElementById('modal-help'); 
+    const dialog_help = document.getElementById('modal-help');
     const dialog_success = document.getElementById('modal-success');
     const dialog_error = document.getElementById('modal-error');
 
@@ -302,6 +322,35 @@
             shadeMap.on('idle', res);
         });
     };
+
+    const shadeMapBuild = (map, shademapKey, layer_type) => {
+        return new ShadeMap({
+            apiKey: shademapKey,
+            date: new Date(Date.UTC(2025, 6, 21, 12, 0)), // Temporary, will be changed before download
+            color: '#ff0000',
+            opacity: 1,
+            terrainSource: {
+                maxZoom: 25,
+                tileSize: 256,
+                getSourceUrl: ({ x, y, z }) => `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`,
+                getElevation: ({ r, g, b, a }) => (r * 256 + g + b / 256) - 32768,
+                _overzoom: 18,
+            },
+            sunExposure: layer_type === LAYER_SUN ? {
+                enabled: true,
+                startDate: new Date(Date.UTC(2025, 6, 21, 8, 0)),
+                endDate: new Date(Date.UTC(2025, 6, 21, 18, 0)),
+                iterations: 32
+            } : {enabled: false},
+            getFeatures: async () => {
+                await SMUtils.mapLoaded(map);
+                const buildingData = map.querySourceFeatures('composite', { sourceLayer: 'building' }).filter((feature) => {
+                    return feature.properties && feature.properties.underground !== "true" && (feature.properties.height || feature.properties.render_height)
+                });
+                return buildingData;
+            },
+        })
+    }
 
     function roundToScreenSize(innerWidth, innerHeight, nw, se, worldSize) {
 
@@ -655,44 +704,60 @@
             });
 
             map.on('load', async () => {
-                const shadeMap = new ShadeMap({
-                    apiKey: shademapKey,
-                    date: new Date(), // Temporary, will be changed before download
-                    color: '#ff0000',
-                    opacity: 1,
-                    terrainSource: {
-                        maxZoom: 25,
-                        tileSize: 256,
-                        getSourceUrl: ({ x, y, z }) => `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`,
-                        getElevation: ({ r, g, b, a }) => (r * 256 + g + b / 256) - 32768,
-                        _overzoom: 18,
-                    },
-                    /*
-                    sunExposure: {
-                        enabled: true,
-                        startDate: new Date(Date.UTC(2025, 6, 21, 9, 0)),
-                        endDate: new Date(Date.UTC(2025, 6, 21, 18, 0)),
-                        iterations: 32
-                    },
-                    */
-                    getFeatures: async () => {
-                        await SMUtils.mapLoaded(map);
-                        const buildingData = map.querySourceFeatures('composite', { sourceLayer: 'building' }).filter((feature) => {
-                            return feature.properties && feature.properties.underground !== "true" && (feature.properties.height || feature.properties.render_height)
-                        });
-                        return buildingData;
-                    },
-                }).addTo(map);
-
-                const mLoaded = SMUtils.mapLoaded(map);
-                const smLoaded = shadeMapLoaded(shadeMap);
-
+                let shadeMap = shadeMapBuild(map, shademapKey, CURRENT_LAYER).addTo(map);
+                let mLoaded = SMUtils.mapLoaded(map);
+                let smLoaded = shadeMapLoaded(shadeMap);
                 await Promise.all([mLoaded, smLoaded]);
 
-                // Once map has loaded, enable download button
-                document.getElementById("download").disabled = false;
-                document.getElementById("download").innerHTML = "Download TIFF";
-                document.getElementById("download").onclick = function () { main(shadeMap) };
+                // Once map has loaded, show form and enable download button
+                div_panel.getElementsByTagName("header")[0].getElementsByTagName("small")[1].innerHTML = "Adjust the parameters and choose the layer you want to export before downloading.";
+                document.getElementById("form").style = "";
+                document.getElementById("form").classList.remove("hidden");
+
+                const download_btn = document.getElementById("download");
+                download_btn.disabled = false;
+                download_btn.innerHTML = "Download shadows";
+                download_btn.onclick = function () { main(shadeMap) };
+
+                // Listeners for layer form change, which should update shademap
+                const layer_shadow = document.getElementById(LAYER_SHADOW);
+                const layer_sun = document.getElementById(LAYER_SUN);
+
+                const observer = new MutationObserver(async (mutationsList) => { // Create a MutationObserver
+                    mutationsList.forEach(async (mutation) => {
+
+                        // Only react when open chages to true (to avoid duplicate, as when one turns true, the other goes false)
+                        if (mutation.attributeName === "open" && mutation.target.hasAttribute("open")) {
+                            if (mutation.target.id == LAYER_SHADOW) {
+                                download_btn.disabled = true;
+                                download_btn.innerHTML = "Loading map...";
+
+                                CURRENT_LAYER = LAYER_SHADOW;
+                                shadeMap.remove();
+                                shadeMap = shadeMapBuild(map, shademapKey, CURRENT_LAYER).addTo(map);
+                                let smLoaded = shadeMapLoaded(shadeMap);
+                                await Promise.all([smLoaded]);
+
+                                download_btn.innerHTML = "Download shadows";
+                                download_btn.disabled = false;
+                            } else if (mutation.target.id == LAYER_SUN) {
+                                download_btn.disabled = true;
+                                download_btn.innerHTML = "Loading map...";
+
+                                CURRENT_LAYER = LAYER_SUN;
+                                shadeMap.remove();
+                                shadeMap = shadeMapBuild(map, shademapKey, CURRENT_LAYER).addTo(map);
+                                let smLoaded = shadeMapLoaded(shadeMap);
+                                await Promise.all([smLoaded]);
+
+                                download_btn.innerHTML = "Download sun exposure";
+                                download_btn.disabled = false;
+                            }
+                        }
+                    });
+                });
+                observer.observe(layer_shadow, { attributes: true }); // Configure and start observing
+                observer.observe(layer_sun, { attributes: true }); // Configure and start observing
             });
         }
     }
