@@ -26,23 +26,39 @@
             display: none;
             position: absolute;
             z-index: 9999;
-            background-color: gray;
-            color: white;
+            background-color: white;
+            color: #363636;
             text-align: center;
             line-height: 50px;
-
+            
             width: 45%;
             height: auto;
             top: 42.5%;
             left: 27.5%;
             border-radius: 8px;
-            padding: 8px;
+            padding: 16px;
         }
+
         #loader p {
             margin: 0;
         }
 
-        dialog {
+        #panel {
+            position: absolute;
+            left: 64px;
+            top: 64px;
+            padding: 8px;
+
+            max-height: 85vh;
+            overflow: scroll;
+
+            min-width: 25%;
+            max-width: 35%;
+            background-color: white;
+            border-radius: 8px;
+        }
+
+        dialog, #panel {
             -webkit-transition: all 0.2s ease-in-out 0s;
             -moz-transition: all 0.2s ease-in-out 0s;
             -ms-transition: all 0.2s ease-in-out 0s;
@@ -51,7 +67,8 @@
             opacity: 1;
             visibility: visible;
         }
-        dialog.hidden {
+
+        dialog.hidden, #panel.hidden {
             opacity: 0;
             visibility: hidden;
         }
@@ -62,11 +79,85 @@
 
 <body>
     <div id='map'></div>
+
     <div id='loader'>
         <p>0%</p>
         <progress value="0" max="100"></progress>
         <small></small>
     </div>
+
+    <div id='panel' class="hidden">
+        <article>
+            <header>
+                <p style="width: 100%; display: flex;">
+                    <strong>🗺️ ShadeMap download tool</strong>
+                    <small style="margin-left: auto;"><a href="#" id="help-modal">ℹ️ Help</a></small>
+                </p>
+                <small>
+                    Adjust the parameters and choose the layer you want to export before downloading.
+                </small>
+            </header>
+
+            <!-- Common parameters-->
+            <div>
+                <small>North-West corner coordinates (latitude, longitude)</small>
+                <fieldset role="group">
+                    <input type="number" name="number" id="nw-lat">
+                    <input type="number" name="number" id="nw-lon">
+                </fieldset>
+            </div>
+
+            <div>
+                <small>Shouth-East corner coordinates (latitude, longitude)</small>
+                <fieldset role="group">
+                    <input type="number" name="number" id="se-lat">
+                    <input type="number" name="number" id="se-lon">
+                </fieldset>
+            </div>
+            
+            <div>
+                <small>Date(s) to consider (YYYY-MM-DD, separated by comma)</small>
+                <input type="text" id="dates">
+            </div>
+
+            <div>
+                <small>Filename (defaults to stitch)</small>
+                <input type="text" id="filename">
+            </div>
+
+            <!-- Layer specific forms-->
+            <details name="example" open>
+                <summary>🌇 Shadows</summary>
+                
+                <div>
+                    <small>Hour(s) to consider (UTC) (HH:MM, separated by comma)</small>
+                    <input type="text" id="hours">
+                </div>
+
+                <div>
+                    <small>Zoom level</small>
+                    <input type="number" name="number" id="zoom">
+                </div>
+            </details>
+
+            <hr />
+
+            <details name="example">
+                <summary>☀️ Sun exposure</summary>
+                <ul>
+                    <li>...</li>
+                    <li>...</li>
+                </ul>
+            </details>
+
+            <footer>
+                <div role="group">
+                    <button id="download" disabled>Loading map...</button>
+                </div>
+            </footer>
+        </article>
+    </div>
+
 
     <dialog open id="modal-keys">
         <article>
@@ -76,16 +167,19 @@
                 </p>
             </header>
             <p>
-                Welcome! This tool uses Mapbox and ShadeMap services, for which you need to provide API keys. <u>You can create them for free</u>.
+                Welcome! This tool uses Mapbox and ShadeMap services, for which you need to provide API keys. <u>You can
+                    create them for free</u>.
             </p>
 
-            <small><a href="https://docs.mapbox.com/help/getting-started/access-tokens/" target="_blank">Mapbox API key tutorial</a></small>
-            <br/>
-            <small><a href="https://shademap.app/about/#" target="_blank">Shademap API key page</a> (click on "Get API key", it will be sent to your email)</small>
+            <small><a href="https://docs.mapbox.com/help/getting-started/access-tokens/" target="_blank">Mapbox API key
+                    tutorial</a></small>
+            <br />
+            <small><a href="https://shademap.app/about/#" target="_blank">Shademap API key page</a> (click on "Get API
+                key", it will be sent to your email)</small>
 
-            <hr/>
-            
-            <div id="tiff-form">
+            <hr />
+
+            <div>
                 <div>
                     <small>Mapbox API key (default public token)</small>
                     <input type="text" id="key-mapbox">
@@ -98,98 +192,83 @@
             </div>
 
             <footer>
-                <button id="key-validation">Proceed</button>
+                <div role="group">
+                    <button id="key-validation">Proceed</button>
+                </div>
             </footer>
         </article>
     </dialog>
 
-    <dialog open id="modal-form" class="hidden">
+    <dialog open id="modal-help" class="hidden">
         <article>
             <header>
                 <p>
                     <strong>🗺️ ShadeMap download tool</strong>
                 </p>
             </header>
-            <p>
-                We are all set! 🙂
-            </p>
-            <p>
-                Ajust the form below with your parameters and click the download button to generate the TIFF file.
-            </p>
 
-            <hr/>
-            <u class="small">
-                The TIFF is generated over a square area, defined with the north-west and south-east corners coordinates, for a specic date and time, with the level of detail specified by the zoom level.
-            </u>
-            <br/><br/>
+            <dl>
+                <dt>
+                    <b>What are the NW and SE coordinates for?</b>
+                </dt>
+                <dd>
+                    The TIFF is generated over a square area, defined with the north-west and south-east corners
+                    coordinates, for a specic date and time, with the level of detail specified by the zoom level.
+                </dd>
+            </dl>
+
+            <dl>
+                <dt>
+                    <b>What is the coordinate reference of the TIFF file generated? </b>
+                </dt>
+                <dd>
+                    The file is generated according to the WGS 84 coordinate reference system (EPSG:4326).
+                </dd>
+            </dl>
+
+            <dl>
+                <dt>
+                    <b>How can I interpret the values of the TIFF file generated?</b>
+                </dt>
+                <dd>
+                    <ul>
+                        <li>Shadows are exported in a binary system: 0 for shadows, 255 for sun.</li>
+                        <li>Sun light exposure values range from 0 to 240, and can be converted to the total minutes of sun exposure by multiplying this value by 6.</li>
+                    </ul>
+                </dd>
+            </dl>
             
-            <div id="tiff-form">
-                <div>
-                    <small>North-west corner latitude</small>
-                    <input type="number" name="number" id="nw-lat">
-                </div>
-
-                <div>
-                    <small>North-west corner longitude</small>
-                    <input type="number" name="number" id="nw-lon">
-                </div>
-
-                <div>
-                    <small>Shouth-east corner latitude</small>
-                    <input type="number" name="number" id="se-lat">
-                </div>
-
-                <div>
-                    <small>South-east corner longitude</small>
-                    <input type="number" name="number" id="se-lon">
-                </div>
-                
-                <div>
-                    <small>Date(s) to consider (YYYY-MM-DD, separated by comma)</small>
-                    <input type="text" id="dates">
-                </div>
-
-                <div>
-                    <small>Hour(s) to consider (UTC) (HH:MM, separated by comma)</small>
-                    <input type="text" id="hours">
-                </div>
-
-                <div>
-                    <small>Zoom level</small>
-                    <input type="number" name="number" id="zoom">
-                </div>
-
-                <div>
-                    <small>Filename (defaults to stitch)</small>
-                    <input type="text" id="filename">
-                </div>
-            </div>
-
             <footer>
-                <button disabled id="download">Download TIFF</button>
+                <div role="group">
+                    <button class="secondary outline modal-close">Go back</button>
+                </div>
             </footer>
         </article>
     </dialog>
 
     <dialog open id="modal-success" class="hidden">
         <article>
-          <h2>✅ Success!</h2>
-          <p></p>
-          <footer>
-            <button class="secondary modal-close">Go back to form</button>
-          </footer>
+            <h2>✅ Success!</h2>
+            <p></p>
+            <footer>
+                <div role="group">
+                    <button class="secondary outline modal-close">Go back to form</button>
+                </div>
+            </footer>
         </article>
-      </dialog>
+    </dialog>
 
-      <dialog open id="modal-error" class="hidden">
+    <dialog open id="modal-error" class="hidden">
         <article>
-          <h2>⚠️ There was an error!</h2>
-          <p></p>
-          <footer>
-            <button class="secondary modal-close">Go back to form</button>
-          </footer>
+            <h2>⚠️ There was an error!</h2>
+            <p></p>
+            <footer>
+                <div role="group">
+                    <button class="secondary outline modal-close">Go back to form</button>
+                </div>
+            </footer>
         </article>
-      </dialog>
+    </dialog>
 </body>
 <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 <script src='https://www.unpkg.com/mapbox-gl-shadow-simulator/dist/mapbox-gl-shadow-simulator.umd.min.js'></script>
@@ -200,7 +279,8 @@
     const TILE_SIZE = 512;
     const loader = document.getElementById('loader');
     const dialog_keys = document.getElementById('modal-keys');
-    const dialog_form = document.getElementById('modal-form');
+    const div_panel = document.getElementById('panel'); // TODO! Delete
+    const dialog_help = document.getElementById('modal-help'); 
     const dialog_success = document.getElementById('modal-success');
     const dialog_error = document.getElementById('modal-error');
 
@@ -265,12 +345,12 @@
         return;
     }
 
-    function coordinatesDifference(a,b) {
-        if (a>0 && b>0) return Math.abs(a-b);
-        if (a<0 && b<0) return Math.abs(Math.abs(a)-Math.abs(b));
-        if (a==0) return Math.abs(b);
-        if (b==0) return Math.abs(a);
-        return Math.abs(a)+Math.abs(b)
+    function coordinatesDifference(a, b) {
+        if (a > 0 && b > 0) return Math.abs(a - b);
+        if (a < 0 && b < 0) return Math.abs(Math.abs(a) - Math.abs(b));
+        if (a == 0) return Math.abs(b);
+        if (b == 0) return Math.abs(a);
+        return Math.abs(a) + Math.abs(b)
     }
 
     async function download(
@@ -285,7 +365,7 @@
         console.log("end", colEnd, rowEnd);
         console.log("cols", cols, "batchcols", batchCols);
         console.log("rows", rows, "batchrows", batchRows);
-        
+
         let latitudePerRow = coordinatesDifference(nw[0], se[0]) / rows;
         let latitudeStart = nw[0] - rowStart * latitudePerRow; // We start on top nw, so we go south (-)
 
@@ -342,7 +422,7 @@
     async function main(shadeMap) {
 
         // Show loader and hide modal
-        dialog_form.classList.add("hidden");
+        div_panel.classList.add("hidden");
         loader.style.display = `block`;
 
         // Compute parameters
@@ -361,7 +441,7 @@
             dialog_error.classList.remove("hidden");
             throw new Error(message);
         }
-        
+
         // Derived parameters
         const worldSize = TILE_SIZE * 2 ** zoom;
 
@@ -395,7 +475,7 @@
         const rows = Math.ceil(height / innerHeight); // Number of sheets rows
         const cols = Math.ceil(width / innerWidth); // Number of sheets cols
 
-        let screensBatches = []; 
+        let screensBatches = [];
         let batch = [];
         let batchSize = 0;
         let colI = 0;
@@ -405,7 +485,7 @@
         let colEnd = 0;
         let rowEnd = 0;
 
-        for (let i = 0; i<screensGlobal.length; i++) {
+        for (let i = 0; i < screensGlobal.length; i++) {
             // Append to batch
             batch.push(screensGlobal[i]);
             batchSize += windowPixels;
@@ -414,7 +494,7 @@
 
             // Update next index
             rowI += 1;
-            if (rowI>=rows) {
+            if (rowI >= rows) {
                 rowI = 0;
                 colI += 1;
             }
@@ -423,10 +503,10 @@
             // OR next passes to next column AND (current batch did not start on first column OR array has no space for a full column)
             // # Last condition avoids black spaces because row or column were not filled totally
             if (
-                i+1==screensGlobal.length || 
-                colI>colStart && (rowStart>0 || rowI===0 && (batchSize + windowPixels*rows)>MAX_ARRAY_SIZE)
+                i + 1 == screensGlobal.length ||
+                colI > colStart && (rowStart > 0 || rowI === 0 && (batchSize + windowPixels * rows) > MAX_ARRAY_SIZE)
             ) {
-                screensBatches.push({colStart, colEnd, rowStart, rowEnd, screens: batch});
+                screensBatches.push({ colStart, colEnd, rowStart, rowEnd, screens: batch });
                 batch = [];
                 batchSize = 0;
 
@@ -440,55 +520,55 @@
 
         // For each timestamp, and for every batch, generate TIFF
         let screenGlobalCounter = 0;
-        for (let ti=0; ti<timestamps.length; ti++) {
+        for (let ti = 0; ti < timestamps.length; ti++) {
             let timestamp = timestamps[ti];
 
             shadeMap.options.date = timestamp;
             console.log("TIMESTAMP", timestamp, "shademap", shadeMap.options);
             // TODO! Change timestamp inside shademap
-    
-            for (let b=0; b<screensBatches.length; b++) {
+
+            for (let b = 0; b < screensBatches.length; b++) {
                 let batch = screensBatches[b];
                 let screens = batch['screens'];
-    
+
                 let batchCols = (batch['colEnd'] - batch['colStart'] + 1);
-                let batchRows = batchCols==1 ? (batch['rowEnd'] - batch['rowStart'] + 1) // If on same column, just compute row difference
+                let batchRows = batchCols == 1 ? (batch['rowEnd'] - batch['rowStart'] + 1) // If on same column, just compute row difference
                     : rows; // If changes column, should have all rows
-                
+
                 // Proceed with download
-                console.log("Processing batch", b, "with pixels", (width/cols*batchCols) * (height/rows*batchRows));
-                const bitmap = new Uint8Array((width/cols*batchCols) * (height/rows*batchRows));
-                for (let i = 0; i < screens.length; i++) {                
+                console.log("Processing batch", b, "with pixels", (width / cols * batchCols) * (height / rows * batchRows));
+                const bitmap = new Uint8Array((width / cols * batchCols) * (height / rows * batchRows));
+                for (let i = 0; i < screens.length; i++) {
                     screenGlobalCounter += 1;
                     console.log("> Processing screen", screenGlobalCounter, "of", screens.length, "(", screensGlobal.length, ")");
-                    let progress =  (screenGlobalCounter / screensGlobal.length / timestamps.length * 100).toFixed(0);
+                    let progress = (screenGlobalCounter / screensGlobal.length / timestamps.length * 100).toFixed(0);
                     loader.getElementsByTagName("p")[0].innerHTML = `${progress}%`;
                     loader.getElementsByTagName("progress")[0].value = progress;
-                    loader.getElementsByTagName("small")[0].innerHTML = `Analysing screen ${screenGlobalCounter}/${screensGlobal.length * timestamps.length} (screen batch ${b+1}/${screensBatches.length}, timestamp ${ti+1}/${timestamps.length})`;
-                    
+                    loader.getElementsByTagName("small")[0].innerHTML = `Analysing screen ${screenGlobalCounter}/${screensGlobal.length * timestamps.length} (screen batch ${b + 1}/${screensBatches.length}, timestamp ${ti + 1}/${timestamps.length})`;
+
                     await loadScreen(shadeMap, screens[i], zoom, worldSize);
                     await new Promise((res, rej) => {
                         setTimeout(res, 1000);
                     });
                     const { data } = shadeMap.toGeoTiff();
                     const [x, y] = screens[i];
-                    console.log("> copy x,y", x,y);
-                    console.log("> copy x,y fixed", x - xMin - (((xMax-xMin)/batchCols)*batch['colStart']),y - yMin - (((yMax-yMin)/batchRows)*batch['rowStart']));
-                    console.log("> area widthxheight", (width/cols)*batchCols, (height/rows)*batchRows)
+                    console.log("> copy x,y", x, y);
+                    console.log("> copy x,y fixed", x - xMin - (((xMax - xMin) / batchCols) * batch['colStart']), y - yMin - (((yMax - yMin) / batchRows) * batch['rowStart']));
+                    console.log("> area widthxheight", (width / cols) * batchCols, (height / rows) * batchRows)
                     copy(
                         data, bitmap, // Data parameters
                         innerWidth, innerHeight, // Screen width and height (px)
                         x - xMin, y - yMin, // Coordinates withint bitmap (width batchCols*batchRows cells)
-                        (width/cols)*batchCols, (height/rows)*batchRows // Area width and height (px)
+                        (width / cols) * batchCols, (height / rows) * batchRows // Area width and height (px)
                     );
                 }
                 console.log("FINISHED batch", b, "downloading...");
                 await download(
-                    bitmap, 
-                    nw, se, width, height, cols, rows, 
+                    bitmap,
+                    nw, se, width, height, cols, rows,
                     batchCols, batchRows, batch['colStart'], batch['rowStart'], batch['colEnd'], batch['rowEnd'],
                     timestamp,
-                    screensBatches.length>1 ? b+1 : undefined,
+                    screensBatches.length > 1 ? b + 1 : undefined,
                 );
                 console.log("FINISHED downloading!");
             }
@@ -497,15 +577,15 @@
 
         // Display success 
         loader.style.display = `none`;
-        dialog_form.classList.remove("hidden");
+        div_panel.classList.remove("hidden");
         dialog_success.getElementsByTagName("p")[0].innerHTML = "Your TIFF export was generated successfully!";
         if (timestamps.length > 1) {
             dialog_success.getElementsByTagName("p")[0].innerHTML += `<br/><br/>The TIFF files name contain the timestamp selected to allow the distinction between them.`
         }
-        if (screensBatches.length>1) {
+        if (screensBatches.length > 1) {
             dialog_success.getElementsByTagName("p")[0].innerHTML += `<br/><br/>The wideness of the area selected exceeds the browser processing capabilities. Do overcome this, it was divided into ${screensBatches.length} smaller and complementar areas, each corresponding to one TIFF file downloaded.`
         }
-        
+
         dialog_success.classList.remove("hidden");
     }
 
@@ -518,7 +598,7 @@
     }
 
     // On load
-    window.onload = function() {
+    window.onload = function () {
         // Add default values to form 
         document.getElementById("nw-lat").value = 38.735517;
         document.getElementById("nw-lon").value = -9.136205;
@@ -537,10 +617,12 @@
         }
 
         // Event binding
-        dialog_success.getElementsByClassName("modal-close")[0].onclick = function() {dialog_success.classList.add("hidden");}
-        dialog_error.getElementsByClassName("modal-close")[0].onclick = function() {dialog_error.classList.add("hidden");}
+        dialog_success.getElementsByClassName("modal-close")[0].onclick = function () { dialog_success.classList.add("hidden"); }
+        dialog_error.getElementsByClassName("modal-close")[0].onclick = function () { dialog_error.classList.add("hidden"); }
+        dialog_help.getElementsByClassName("modal-close")[0].onclick = function () { dialog_help.classList.add("hidden"); }
+        document.getElementById("help-modal").onclick = function () { dialog_help.classList.remove("hidden"); }
 
-        document.getElementById("key-validation").onclick = function() {
+        document.getElementById("key-validation").onclick = function () {
             let mapboxKey = document.getElementById("key-mapbox").value;
             let shademapKey = document.getElementById("key-shademap").value;
 
@@ -557,8 +639,8 @@
             }
 
             // If valid, start map and show form modal
-            dialog_form.classList.remove("hidden");
             dialog_keys.classList.add("hidden");
+            div_panel.classList.remove("hidden");
 
             // Initialize map
             mapboxgl.accessToken = mapboxKey;
@@ -585,6 +667,14 @@
                         getElevation: ({ r, g, b, a }) => (r * 256 + g + b / 256) - 32768,
                         _overzoom: 18,
                     },
+                    /*
+                    sunExposure: {
+                        enabled: true,
+                        startDate: new Date(Date.UTC(2025, 6, 21, 9, 0)),
+                        endDate: new Date(Date.UTC(2025, 6, 21, 18, 0)),
+                        iterations: 32
+                    },
+                    */
                     getFeatures: async () => {
                         await SMUtils.mapLoaded(map);
                         const buildingData = map.querySourceFeatures('composite', { sourceLayer: 'building' }).filter((feature) => {
@@ -601,7 +691,8 @@
 
                 // Once map has loaded, enable download button
                 document.getElementById("download").disabled = false;
-                document.getElementById("download").onclick = function() {main(shadeMap)};
+                document.getElementById("download").innerHTML = "Download TIFF";
+                document.getElementById("download").onclick = function () { main(shadeMap) };
             });
         }
     }
