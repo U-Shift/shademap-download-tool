@@ -100,7 +100,7 @@
             <header>
                 <div style="display: flex; flex-direction: row; flex-wrap: nowrap;">
                     <h4 style="margin: 0;">🗺️ ShadeMap download tool</h4>
-                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a></small>
+                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a> <a href="#" class="about-modal">🏛️ About</a></small>
                 </div>
                 <small>
                     Loading map...
@@ -188,7 +188,7 @@
             <header>
                 <div style="display: flex; flex-direction: row; flex-wrap: nowrap;">
                     <h4 style="margin: 0;">🗺️ ShadeMap download tool</h4>
-                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a></small>
+                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a> <a href="#" class="about-modal">🏛️ About</a></small>
                 </div>
             </header>
             <p>
@@ -305,6 +305,37 @@
         </article>
     </dialog>
 
+    <dialog open id="modal-about" class="hidden">
+        <article>
+            <header>
+                <h4>
+                    <strong>🏛️ About</strong>
+                </h4>
+            </header>
+
+            <p>
+                This web app is an adaptation of Ted Piotrowski's work, which provides example scripts to export ShadeMap data.
+            </p>
+            <a href="https://github.com/ted-piotrowski/shademap-examples" target="_blank">Original GitHub project</a>
+            <br/><br/>
+
+            <p>
+                The "🗺️ ShadeMap download tool" is an extension to this work, adapting it to provide an user interface that allows a smooth experience through the browser, without editting any code, introducing also some new features.
+            </p>
+            <a href="https://github.com/gmatosferreira/shademap-examples" target="_blank">ShadeMap download tool GitHub project</a>
+
+            <br/><br/>
+            <p>
+                Developed by <a href="https://ushift.tecnico.ulisboa.pt" target="_blank">U-shift</a>, a research group from Instituto Superior Técnico, Lisboa, Portugal.
+            </p>
+
+            <footer>
+                <div role="group">
+                    <button class="secondary outline modal-close">Go back</button>
+                </div>
+            </footer>
+        </article>
+    </article>
     <dialog open id="modal-success" class="hidden">
         <article>
             <h4>✅ Success!</h4>
@@ -343,6 +374,7 @@
     const dialog_keys = document.getElementById('modal-keys');
     const div_panel = document.getElementById('panel'); // TODO! Delete
     const dialog_help = document.getElementById('modal-help');
+    const dialog_about = document.getElementById('modal-about');
     const dialog_success = document.getElementById('modal-success');
     const dialog_error = document.getElementById('modal-error');
 
@@ -735,7 +767,9 @@
         dialog_success.getElementsByClassName("modal-close")[0].onclick = function () { dialog_success.classList.add("hidden"); }
         dialog_error.getElementsByClassName("modal-close")[0].onclick = function () { dialog_error.classList.add("hidden"); }
         dialog_help.getElementsByClassName("modal-close")[0].onclick = function () { dialog_help.classList.add("hidden"); }
+        dialog_about.getElementsByClassName("modal-close")[0].onclick = function () { dialog_about.classList.add("hidden"); }
         Array.from(document.getElementsByClassName("help-modal")).forEach(el => el.onclick = function () { dialog_help.classList.remove("hidden"); })
+        Array.from(document.getElementsByClassName("about-modal")).forEach(el => el.onclick = function () { dialog_about.classList.remove("hidden"); })
 
         document.getElementById("key-validation").onclick = function () {
             let mapboxKey = document.getElementById("key-mapbox").value.trim();
