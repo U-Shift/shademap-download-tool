@@ -145,8 +145,13 @@
                 </div>
                 
                 <div>
-                    <small>Timestamp to consider (UTC)</small>
-                    <input type="datetime" name="datetime" id="timestamp">
+                    <small>Date(s) to consider (YYYY-MM-DD, separated by comma)</small>
+                    <input type="text" id="dates">
+                </div>
+
+                <div>
+                    <small>Hour(s) to consider (UTC) (HH:MM, separated by comma)</small>
+                    <input type="text" id="hours">
                 </div>
 
                 <div>
@@ -272,6 +277,7 @@
         data, // Exported data to download
         nw, se, width, height, cols, rows, // Area global values
         batchCols, batchRows, colStart, rowStart, colEnd, rowEnd, // Sheet batch information
+        timestamp, // Timestamp is added to file name
         subarea // Subarea number for file name purposes
     ) {
 
@@ -292,6 +298,9 @@
 
         console.log("ModelTiepoint", ModelTiepoint);
         console.log("ModelPixelScale", ModelPixelScale);
+
+        const pad = (num) => String(num).padStart(2, '0');
+
         const metadata = {
             width: (width / cols) * batchCols,
             height: (height / rows) * batchRows,
@@ -320,7 +329,7 @@
 
         let filename = document.getElementById("filename").value;
         if (!filename) filename = "stitch";
-        let append = "";
+        let append = `_${timestamp.getFullYear()}${pad(timestamp.getMonth() + 1)}${pad(timestamp.getDate())}_${pad(timestamp.getHours())}${pad(timestamp.getMinutes())}${pad(timestamp.getSeconds())}`;
         if (subarea) append = `_part${subarea}`
         link.download = `${filename}${append}.tiff`
 
@@ -340,7 +349,18 @@
         let zoom = parseFloat(document.getElementById("zoom").value);
         let nw = [parseFloat(document.getElementById("nw-lat").value), parseFloat(document.getElementById("nw-lon").value)];
         let se = [parseFloat(document.getElementById("se-lat").value), parseFloat(document.getElementById("se-lon").value)];
-        let timestamp = new Date(document.getElementById("timestamp").value);
+
+        let dates = document.getElementById("dates").value.split(/,|;| /).map(v => v.trim()).filter(v => !!v);
+        let hours = document.getElementById("hours").value.split(/,|;| /).map(v => v.trim()).filter(v => !!v);
+        let timestamps = dates.map(d => hours.map(h => new Date(`${d}T${h}`))).flat(1);
+
+        // Validate if there is any missing
+        if (!zoom || !nw.every(v => !!v) || !se.every(v => !!v) || !dates.length || !hours.length) {
+            let message = `Invalid parameters!`;
+            dialog_error.getElementsByTagName("p")[0].innerHTML = message;
+            dialog_error.classList.remove("hidden");
+            throw new Error(message);
+        }
         
         // Derived parameters
         const worldSize = TILE_SIZE * 2 ** zoom;
@@ -418,57 +438,70 @@
         console.log("Generating", screensBatches.length, "batches, on a canvas with", cols, "cols and", rows, "rows");
         console.log("screensBatches", screensBatches);
 
-        // For each batch, generate TIFF
+        // For each timestamp, and for every batch, generate TIFF
         let screenGlobalCounter = 0;
-        for (let b=0; b<screensBatches.length; b++) {
-            let batch = screensBatches[b];
-            let screens = batch['screens'];
+        for (let ti=0; ti<timestamps.length; ti++) {
+            let timestamp = timestamps[ti];
 
-            let batchCols = (batch['colEnd'] - batch['colStart'] + 1);
-            let batchRows = batchCols==1 ? (batch['rowEnd'] - batch['rowStart'] + 1) // If on same column, just compute row difference
-                : rows; // If changes column, should have all rows
-            
-            // Proceed with download
-            console.log("Processing batch", b, "with pixels", (width/cols*batchCols) * (height/rows*batchRows));
-            const bitmap = new Uint8Array((width/cols*batchCols) * (height/rows*batchRows));
-            for (let i = 0; i < screens.length; i++) {                
-                screenGlobalCounter += 1;
-                console.log("> Processing screen", screenGlobalCounter, "of", screens.length, "(", screensGlobal.length, ")");
-                let progress =  (screenGlobalCounter / screensGlobal.length * 100).toFixed(0);
-                loader.getElementsByTagName("p")[0].innerHTML = `${progress}%`;
-                loader.getElementsByTagName("progress")[0].value = progress;
-                loader.getElementsByTagName("small")[0].innerHTML = `Analysing screen ${screenGlobalCounter}/${screensGlobal.length} (screen batch ${b+1}/${screensBatches.length})`;
+            shadeMap.options.date = timestamp;
+            console.log("TIMESTAMP", timestamp, "shademap", shadeMap.options);
+            // TODO! Change timestamp inside shademap
+    
+            for (let b=0; b<screensBatches.length; b++) {
+                let batch = screensBatches[b];
+                let screens = batch['screens'];
+    
+                let batchCols = (batch['colEnd'] - batch['colStart'] + 1);
+                let batchRows = batchCols==1 ? (batch['rowEnd'] - batch['rowStart'] + 1) // If on same column, just compute row difference
+                    : rows; // If changes column, should have all rows
                 
-                await loadScreen(shadeMap, screens[i], zoom, worldSize);
-                await new Promise((res, rej) => {
-                    setTimeout(res, 1000);
-                });
-                const { data } = shadeMap.toGeoTiff();
-                const [x, y] = screens[i];
-                console.log("> copy x,y", x,y);
-                console.log("> copy x,y fixed", x - xMin - (((xMax-xMin)/batchCols)*batch['colStart']),y - yMin - (((yMax-yMin)/batchRows)*batch['rowStart']));
-                console.log("> area widthxheight", (width/cols)*batchCols, (height/rows)*batchRows)
-                copy(
-                    data, bitmap, // Data parameters
-                    innerWidth, innerHeight, // Screen width and height (px)
-                    x - xMin, y - yMin, // Coordinates withint bitmap (width batchCols*batchRows cells)
-                    (width/cols)*batchCols, (height/rows)*batchRows // Area width and height (px)
+                // Proceed with download
+                console.log("Processing batch", b, "with pixels", (width/cols*batchCols) * (height/rows*batchRows));
+                const bitmap = new Uint8Array((width/cols*batchCols) * (height/rows*batchRows));
+                for (let i = 0; i < screens.length; i++) {                
+                    screenGlobalCounter += 1;
+                    console.log("> Processing screen", screenGlobalCounter, "of", screens.length, "(", screensGlobal.length, ")");
+                    let progress =  (screenGlobalCounter / screensGlobal.length / timestamps.length * 100).toFixed(0);
+                    loader.getElementsByTagName("p")[0].innerHTML = `${progress}%`;
+                    loader.getElementsByTagName("progress")[0].value = progress;
+                    loader.getElementsByTagName("small")[0].innerHTML = `Analysing screen ${screenGlobalCounter}/${screensGlobal.length * timestamps.length} (screen batch ${b+1}/${screensBatches.length}, timestamp ${ti+1}/${timestamps.length})`;
+                    
+                    await loadScreen(shadeMap, screens[i], zoom, worldSize);
+                    await new Promise((res, rej) => {
+                        setTimeout(res, 1000);
+                    });
+                    const { data } = shadeMap.toGeoTiff();
+                    const [x, y] = screens[i];
+                    console.log("> copy x,y", x,y);
+                    console.log("> copy x,y fixed", x - xMin - (((xMax-xMin)/batchCols)*batch['colStart']),y - yMin - (((yMax-yMin)/batchRows)*batch['rowStart']));
+                    console.log("> area widthxheight", (width/cols)*batchCols, (height/rows)*batchRows)
+                    copy(
+                        data, bitmap, // Data parameters
+                        innerWidth, innerHeight, // Screen width and height (px)
+                        x - xMin, y - yMin, // Coordinates withint bitmap (width batchCols*batchRows cells)
+                        (width/cols)*batchCols, (height/rows)*batchRows // Area width and height (px)
+                    );
+                }
+                console.log("FINISHED batch", b, "downloading...");
+                await download(
+                    bitmap, 
+                    nw, se, width, height, cols, rows, 
+                    batchCols, batchRows, batch['colStart'], batch['rowStart'], batch['colEnd'], batch['rowEnd'],
+                    timestamp,
+                    screensBatches.length>1 ? b+1 : undefined,
                 );
+                console.log("FINISHED downloading!");
             }
-            console.log("FINISHED batch", b, "downloading...");
-            await download(
-                bitmap, 
-                nw, se, width, height, cols, rows, 
-                batchCols, batchRows, batch['colStart'], batch['rowStart'], batch['colEnd'], batch['rowEnd'],
-                screensBatches.length>1 ? b+1 : undefined
-            );
-            console.log("FINISHED downloading!");
         }
+
 
         // Display success 
         loader.style.display = `none`;
         dialog_form.classList.remove("hidden");
-        dialog_success.getElementsByTagName("p")[0].innerHTML = "Your TIFF file was generated successfully!";
+        dialog_success.getElementsByTagName("p")[0].innerHTML = "Your TIFF export was generated successfully!";
+        if (timestamps.length > 1) {
+            dialog_success.getElementsByTagName("p")[0].innerHTML += `<br/><br/>The TIFF files name contain the timestamp selected to allow the distinction between them.`
+        }
         if (screensBatches.length>1) {
             dialog_success.getElementsByTagName("p")[0].innerHTML += `<br/><br/>The wideness of the area selected exceeds the browser processing capabilities. Do overcome this, it was divided into ${screensBatches.length} smaller and complementar areas, each corresponding to one TIFF file downloaded.`
         }
@@ -487,11 +520,12 @@
     // On load
     window.onload = function() {
         // Add default values to form 
-        document.getElementById("nw-lat").value = 38.760246;
-        document.getElementById("nw-lon").value = -9.192003;
-        document.getElementById("se-lat").value = 38.699233;
-        document.getElementById("se-lon").value = -9.082694;
-        document.getElementById("timestamp").value = new Date(Date.UTC(2025, 6, 21, 11, 0)).toISOString().slice(0,16);
+        document.getElementById("nw-lat").value = 38.735517;
+        document.getElementById("nw-lon").value = -9.136205;
+        document.getElementById("se-lat").value = 38.726796;
+        document.getElementById("se-lon").value = -9.117215;
+        document.getElementById("dates").value = "2025-06-21";
+        document.getElementById("hours").value = "12:00";
         document.getElementById("zoom").value = 15;
         document.getElementById("filename").value = "stitch";
 
@@ -541,7 +575,7 @@
             map.on('load', async () => {
                 const shadeMap = new ShadeMap({
                     apiKey: shademapKey,
-                    date: new Date(Date.UTC(2025, 6, 21, 11, 0)), // 6:39PM EST
+                    date: new Date(), // Temporary, will be changed before download
                     color: '#ff0000',
                     opacity: 1,
                     terrainSource: {
