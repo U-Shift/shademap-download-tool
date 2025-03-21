@@ -100,7 +100,8 @@
             <header>
                 <div style="display: flex; flex-direction: row; flex-wrap: nowrap;">
                     <h4 style="margin: 0;">🗺️ ShadeMap download tool</h4>
-                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a> <a href="#" class="about-modal">🏛️ About</a></small>
+                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a> <a href="#"
+                            class="about-modal">🏛️ About</a></small>
                 </div>
                 <small>
                     Loading map...
@@ -188,7 +189,8 @@
             <header>
                 <div style="display: flex; flex-direction: row; flex-wrap: nowrap;">
                     <h4 style="margin: 0;">🗺️ ShadeMap download tool</h4>
-                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a> <a href="#" class="about-modal">🏛️ About</a></small>
+                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a> <a href="#"
+                            class="about-modal">🏛️ About</a></small>
                 </div>
             </header>
             <p>
@@ -217,8 +219,9 @@
 
                 <label>
                     <input type="checkbox" name="save-keys" checked />
-                    Save on local storage, to avoid filling them again <br/><small>(nothing will be sent to our server)</small>
-                  </label>
+                    Save on local storage, to avoid filling them again <br /><small>(nothing will be sent to our
+                        server)</small>
+                </label>
             </div>
 
             <footer>
@@ -249,10 +252,11 @@
             </dl>
             <dl>
                 <dt>
-                    <b>What are the iteractions parameter, on  the sun exposure form?</b>
+                    <b>What are the iteractions parameter, on the sun exposure form?</b>
                 </dt>
                 <dd>
-                    According to the ShadeMap documentation: "Number of discrete chunks to calculate shadows for between startDate and endDate. A larger number will provide more detail but take longer to compute."
+                    According to the ShadeMap documentation: "Number of discrete chunks to calculate shadows for between
+                    startDate and endDate. A larger number will provide more detail but take longer to compute."
                 </dd>
             </dl>
 
@@ -276,7 +280,7 @@
                             sun exposure by multiplying this value by 6.</li>
                     </ul>
                 </dd>
-                
+
             </dl>
 
             <h5>Privacy</h5>
@@ -285,7 +289,9 @@
                     <b>Is it safe to check the box to store the API credentials? </b>
                 </dt>
                 <dd>
-                    The API key is stored on the local storage of your browser, in plain text. It is not sent to other services rather than the Mapbox and ShadeMap APIs. The APIs are accessed directly from your browser, without any brokers.
+                    The API key is stored on the local storage of your browser, in plain text. It is not sent to other
+                    services rather than the Mapbox and ShadeMap APIs. The APIs are accessed directly from your browser,
+                    without any brokers.
                 </dd>
             </dl>
             <dl>
@@ -293,7 +299,8 @@
                     <b>Can I delete the credentials, once stored?</b>
                 </dt>
                 <dd>
-                    Yes, just reload the page, and enter the application again, but this time unchecking the box to save credentials. Once you access after this, they will be removed.
+                    Yes, just reload the page, and enter the application again, but this time unchecking the box to save
+                    credentials. Once you access after this, they will be removed.
                 </dd>
             </dl>
 
@@ -314,19 +321,24 @@
             </header>
 
             <p>
-                This web app is an adaptation of Ted Piotrowski's work, which provides example scripts to export ShadeMap data.
+                This web app is an adaptation of Ted Piotrowski's work, which provides example scripts to export
+                ShadeMap data.
             </p>
             <a href="https://github.com/ted-piotrowski/shademap-examples" target="_blank">Original GitHub project</a>
-            <br/><br/>
+            <br /><br />
 
             <p>
-                The "🗺️ ShadeMap download tool" is an extension to this work, adapting it to provide an user interface that allows a smooth experience through the browser, without editting any code, introducing also some new features.
+                The "🗺️ ShadeMap download tool" is an extension to this work, adapting it to provide an user interface
+                that allows a smooth experience through the browser, without editting any code, introducing also some
+                new features.
             </p>
-            <a href="https://github.com/gmatosferreira/shademap-examples" target="_blank">ShadeMap download tool GitHub project</a>
+            <a href="https://github.com/gmatosferreira/shademap-examples" target="_blank">ShadeMap download tool GitHub
+                project</a>
 
-            <br/><br/>
+            <br /><br />
             <p>
-                Developed by <a href="https://ushift.tecnico.ulisboa.pt" target="_blank">U-shift</a>, a research group from Instituto Superior Técnico, Lisboa, Portugal.
+                Developed by <a href="https://ushift.tecnico.ulisboa.pt" target="_blank">U-shift</a>, a research group
+                from Instituto Superior Técnico, Lisboa, Portugal.
             </p>
 
             <footer>
@@ -335,7 +347,7 @@
                 </div>
             </footer>
         </article>
-    </article>
+    </dialog>
     <dialog open id="modal-success" class="hidden">
         <article>
             <h4>✅ Success!</h4>
@@ -543,7 +555,7 @@
         document.body.removeChild(link);
     }
 
-    async function main(shadeMap) {
+    async function main(map, shademapKey) {
 
         // Compute parameters
         let zoom = parseFloat(document.getElementById("zoom").value.trim());
@@ -577,6 +589,11 @@
         // Show loader and hide modal
         div_panel.classList.add("hidden");
         loader.style.display = `block`;
+
+        let shadeMap = shadeMapBuild(map, shademapKey, CURRENT_LAYER).addTo(map);
+        let mLoaded = SMUtils.mapLoaded(map);
+        let smLoaded = shadeMapLoaded(shadeMap);
+        await Promise.all([mLoaded, smLoaded]);
 
         // Derived parameters
         const worldSize = TILE_SIZE * 2 ** zoom;
@@ -731,6 +748,8 @@
         }
 
         dialog_success.classList.remove("hidden");
+
+        shadeMap.remove();
     }
 
     async function copy(source, destination, sw, sh, dx, dy, dw, dh) {
@@ -811,10 +830,6 @@
             });
 
             map.on('load', async () => {
-                let shadeMap = shadeMapBuild(map, shademapKey, CURRENT_LAYER).addTo(map);
-                let mLoaded = SMUtils.mapLoaded(map);
-                let smLoaded = shadeMapLoaded(shadeMap);
-                await Promise.all([mLoaded, smLoaded]);
 
                 // Once map has loaded, show form and enable download button
                 div_panel.getElementsByTagName("header")[0].getElementsByTagName("small")[1].innerHTML = "Adjust the parameters and choose the layer you want to export before downloading.";
@@ -824,7 +839,7 @@
                 const download_btn = document.getElementById("download");
                 download_btn.disabled = false;
                 download_btn.innerHTML = "Download shadows";
-                download_btn.onclick = function () { main(shadeMap) };
+                download_btn.onclick = function () { main(map, shademapKey) };
 
                 // Listeners for layer form change, which should update shademap
                 const layer_shadow = document.getElementById(LAYER_SHADOW);
@@ -836,27 +851,11 @@
                         // Only react when open chages to true (to avoid duplicate, as when one turns true, the other goes false)
                         if (mutation.attributeName === "open" && mutation.target.hasAttribute("open")) {
                             if (mutation.target.id == LAYER_SHADOW) {
-                                download_btn.disabled = true;
-                                download_btn.innerHTML = "Loading map...";
-
                                 CURRENT_LAYER = LAYER_SHADOW;
-                                shadeMap.remove();
-                                shadeMap = shadeMapBuild(map, shademapKey, CURRENT_LAYER).addTo(map);
-                                let smLoaded = shadeMapLoaded(shadeMap);
-                                await Promise.all([smLoaded]);
-
                                 download_btn.innerHTML = "Download shadows";
                                 download_btn.disabled = false;
                             } else if (mutation.target.id == LAYER_SUN) {
-                                download_btn.disabled = true;
-                                download_btn.innerHTML = "Loading map...";
-
                                 CURRENT_LAYER = LAYER_SUN;
-                                shadeMap.remove();
-                                shadeMap = shadeMapBuild(map, shademapKey, CURRENT_LAYER).addTo(map);
-                                let smLoaded = shadeMapLoaded(shadeMap);
-                                await Promise.all([smLoaded]);
-
                                 download_btn.innerHTML = "Download sun exposure";
                                 download_btn.disabled = false;
                             }
