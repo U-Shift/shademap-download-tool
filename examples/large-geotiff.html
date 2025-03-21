@@ -404,7 +404,7 @@
             // # Last condition avoids black spaces because row or column were not filled totally
             if (
                 i+1==screensGlobal.length || 
-                colI>colStart && (rowStart>0 || (batchSize + windowPixels*rows)>MAX_ARRAY_SIZE)
+                colI>colStart && (rowStart>0 || rowI===0 && (batchSize + windowPixels*rows)>MAX_ARRAY_SIZE)
             ) {
                 screensBatches.push({colStart, colEnd, rowStart, rowEnd, screens: batch});
                 batch = [];
