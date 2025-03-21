@@ -98,10 +98,10 @@
     <div id='panel' class="hidden">
         <article>
             <header>
-                <p style="width: 100%; display: flex;">
-                    <strong>🗺️ ShadeMap download tool</strong>
-                    <small style="margin-left: auto;"><a href="#" id="help-modal">ℹ️ Help</a></small>
-                </p>
+                <div style="display: flex; flex-direction: row; flex-wrap: nowrap;">
+                    <h4 style="margin: 0;">🗺️ ShadeMap download tool</h4>
+                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a></small>
+                </div>
                 <small>
                     Loading map...
                 </small>
@@ -186,9 +186,10 @@
     <dialog open id="modal-keys">
         <article>
             <header>
-                <p>
-                    <strong>🗺️ ShadeMap download tool</strong>
-                </p>
+                <div style="display: flex; flex-direction: row; flex-wrap: nowrap;">
+                    <h4 style="margin: 0;">🗺️ ShadeMap download tool</h4>
+                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a></small>
+                </div>
             </header>
             <p>
                 Welcome! This tool uses Mapbox and ShadeMap services, for which you need to provide API keys. <u>You can
@@ -213,6 +214,11 @@
                     <small>Shademap API key</small>
                     <input type="text" id="key-shademap" placeholder="Your API key">
                 </div>
+
+                <label>
+                    <input type="checkbox" name="save-keys" checked />
+                    Save on local storage, to avoid filling them again <br/><small>(nothing will be sent to our server)</small>
+                  </label>
             </div>
 
             <footer>
@@ -226,11 +232,12 @@
     <dialog open id="modal-help" class="hidden">
         <article>
             <header>
-                <p>
-                    <strong>🗺️ ShadeMap download tool</strong>
-                </p>
+                <h4>
+                    <strong>ℹ️ Help</strong>
+                </h4>
             </header>
 
+            <h5>Form</h5>
             <dl>
                 <dt>
                     <b>What are the NW and SE coordinates for?</b>
@@ -248,6 +255,8 @@
                     According to the ShadeMap documentation: "Number of discrete chunks to calculate shadows for between startDate and endDate. A larger number will provide more detail but take longer to compute."
                 </dd>
             </dl>
+
+            <h5>File export</h5>
             <dl>
                 <dt>
                     <b>What is the coordinate reference of the file generated? </b>
@@ -270,6 +279,24 @@
                 
             </dl>
 
+            <h5>Privacy</h5>
+            <dl>
+                <dt>
+                    <b>Is it safe to check the box to store the API credentials? </b>
+                </dt>
+                <dd>
+                    The API key is stored on the local storage of your browser, in plain text. It is not sent to other services rather than the Mapbox and ShadeMap APIs. The APIs are accessed directly from your browser, without any brokers.
+                </dd>
+            </dl>
+            <dl>
+                <dt>
+                    <b>Can I delete the credentials, once stored?</b>
+                </dt>
+                <dd>
+                    Yes, just reload the page, and enter the application again, but this time unchecking the box to save credentials. Once you access after this, they will be removed.
+                </dd>
+            </dl>
+
             <footer>
                 <div role="group">
                     <button class="secondary outline modal-close">Go back</button>
@@ -280,7 +307,7 @@
 
     <dialog open id="modal-success" class="hidden">
         <article>
-            <h2>✅ Success!</h2>
+            <h4>✅ Success!</h4>
             <p></p>
             <footer>
                 <div role="group">
@@ -292,7 +319,7 @@
 
     <dialog open id="modal-error" class="hidden">
         <article>
-            <h2>⚠️ There was an error!</h2>
+            <h4>⚠️ There was an error!</h4>
             <p></p>
             <footer>
                 <div role="group">
@@ -708,14 +735,21 @@
         dialog_success.getElementsByClassName("modal-close")[0].onclick = function () { dialog_success.classList.add("hidden"); }
         dialog_error.getElementsByClassName("modal-close")[0].onclick = function () { dialog_error.classList.add("hidden"); }
         dialog_help.getElementsByClassName("modal-close")[0].onclick = function () { dialog_help.classList.add("hidden"); }
-        document.getElementById("help-modal").onclick = function () { dialog_help.classList.remove("hidden"); }
+        Array.from(document.getElementsByClassName("help-modal")).forEach(el => el.onclick = function () { dialog_help.classList.remove("hidden"); })
 
         document.getElementById("key-validation").onclick = function () {
-            let mapboxKey = document.getElementById("key-mapbox").value;
-            let shademapKey = document.getElementById("key-shademap").value;
+            let mapboxKey = document.getElementById("key-mapbox").value.trim();
+            let shademapKey = document.getElementById("key-shademap").value.trim();
 
-            localStorage.setItem('mapboxKey', mapboxKey);
-            localStorage.setItem("shademapKey", shademapKey);
+            let saveCredentials = document.getElementsByName("save-keys")[0];
+            if (saveCredentials.checked) {
+                localStorage.setItem('mapboxKey', mapboxKey);
+                localStorage.setItem("shademapKey", shademapKey);
+            } else {
+                localStorage.removeItem('mapboxKey');
+                localStorage.removeItem("shademapKey");
+            }
+
 
             console.log("keys", mapboxKey, shademapKey);
 
