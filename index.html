@@ -24,7 +24,7 @@
     <div id='panel' class="hidden">
         <article>
             <header>
-                <div style="display: flex; flex-direction: row; flex-wrap: nowrap;">
+                <div style="display: flex; flex-direction: row; flex-wrap: nowrap; margin-bottom: 8px;">
                     <h4 style="margin: 0;">🗺️ ShadeMap download tool</h4>
                     <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a> <a href="#"
                             class="about-modal">🏛️ About</a></small>
@@ -35,6 +35,7 @@
             </header>
 
             <div id="form" class="hidden" style="display: none;">
+                <hr/>
                 <!-- Common parameters-->
                 <div>
                     <small>North-West corner coordinates (latitude, longitude)</small>
@@ -45,11 +46,16 @@
                 </div>
 
                 <div>
-                    <small>Shouth-East corner coordinates (latitude, longitude)</small>
+                    <small>South-East corner coordinates (latitude, longitude)</small>
                     <fieldset role="group">
                         <input type="number" name="number" id="se-lat" placeholder="Latitude">
                         <input type="number" name="number" id="se-lon" placeholder="Longitude">
                     </fieldset>
+                </div>
+
+                <div role="group">
+                    <button class="secondary outline small" id="op-draw">Draw polygon</button>
+                    <button class="secondary outline small" id="op-geojson">Add GeoJSON</button>
                 </div>
 
                 <div>
@@ -299,6 +305,7 @@
     </dialog>
 </body>
 <script src="https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+<script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.3/mapbox-gl-draw.js'></script>
 <script src='https://www.unpkg.com/mapbox-gl-shadow-simulator/dist/mapbox-gl-shadow-simulator.umd.min.js'></script>
 <script src="https://cdn.jsdelivr.net/npm/geotiff@2.0.7/dist-browser/geotiff.js"></script>
 

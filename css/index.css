@@ -50,6 +50,7 @@ body,
     margin: 0;
     box-shadow: none;
 }
+#panel header {border-bottom: none!important;}
 
 dialog,
 #panel,
@@ -68,4 +69,7 @@ dialog.hidden,
 #form.hidden {
     opacity: 0;
     visibility: hidden;
+    display: none;
 }
+
+button.small {font-size: .9rem; padding: 8px;}

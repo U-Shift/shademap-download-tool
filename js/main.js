@@ -8,12 +8,19 @@ let CURRENT_LAYER = LAYER_SHADOW;
 
 // DOM elements
 const loader = document.getElementById('loader');
-const dialog_keys = document.getElementById('modal-keys');
+
 const div_panel = document.getElementById('panel');
+const subtitle = div_panel.getElementsByTagName("header")[0].getElementsByTagName("small")[1];
+const form = document.getElementById("form");
+
+const dialog_keys = document.getElementById('modal-keys');
 const dialog_help = document.getElementById('modal-help');
 const dialog_about = document.getElementById('modal-about');
 const dialog_success = document.getElementById('modal-success');
 const dialog_error = document.getElementById('modal-error');
+
+const op_draw = document.getElementById('op-draw');
+const op_geojson = document.getElementById('op-geojson');
 
 // Export handling
 async function generateExport(map, shademapKey) {
@@ -244,10 +251,12 @@ window.onload = function () {
     Array.from(document.getElementsByClassName("help-modal")).forEach(el => el.onclick = function () { dialog_help.classList.remove("hidden"); })
     Array.from(document.getElementsByClassName("about-modal")).forEach(el => el.onclick = function () { dialog_about.classList.remove("hidden"); })
 
+    // Key validation is required to activate the application workflow
     document.getElementById("key-validation").onclick = function () {
+        
+        // Manage credentials
         let mapboxKey = document.getElementById("key-mapbox").value.trim();
         let shademapKey = document.getElementById("key-shademap").value.trim();
-
         let saveCredentials = document.getElementsByName("save-keys")[0];
         if (saveCredentials.checked) {
             localStorage.setItem('mapboxKey', mapboxKey);
@@ -256,10 +265,6 @@ window.onload = function () {
             localStorage.removeItem('mapboxKey');
             localStorage.removeItem("shademapKey");
         }
-
-
-        console.log("keys", mapboxKey, shademapKey);
-
         if (!mapboxKey || !shademapKey) {
             let message = `Invalid or missing keys!`;
             dialog_error.getElementsByTagName("p")[0].innerHTML = message;
@@ -283,25 +288,30 @@ window.onload = function () {
             hash: true
         });
 
+    
+        // Once map has loaded, show form and enable download button
         map.on('load', async () => {
 
-            // Once map has loaded, show form and enable download button
-            div_panel.getElementsByTagName("header")[0].getElementsByTagName("small")[1].innerHTML = "Adjust the parameters and choose the layer you want to export before downloading.";
-            document.getElementById("form").style = "";
-            document.getElementById("form").classList.remove("hidden");
+            // Show form
+            subtitle.innerHTML = "Adjust the parameters and choose the layer you want to export before downloading.";
+            form.style = "";
+            form.classList.remove("hidden");
 
+            // Buttons listeners
+            // > Download btn
             const download_btn = document.getElementById("download");
             download_btn.disabled = false;
             download_btn.innerHTML = "Download shadows";
             download_btn.onclick = function () { generateExport(map, shademapKey) };
 
-            // Listeners for layer form change, which should update shademap
+            // > Draw polygon btn
+            op_draw.onclick = () => drawPolygon(map, form, subtitle);
+
+            // Listeners for layer change (when user toggles accordion section)
             const layer_shadow = document.getElementById(LAYER_SHADOW);
             const layer_sun = document.getElementById(LAYER_SUN);
-
             const observer = new MutationObserver(async (mutationsList) => { // Create a MutationObserver
                 mutationsList.forEach(async (mutation) => {
-
                     // Only react when open chages to true (to avoid duplicate, as when one turns true, the other goes false)
                     if (mutation.attributeName === "open" && mutation.target.hasAttribute("open")) {
                         if (mutation.target.id == LAYER_SHADOW) {
@@ -321,3 +331,4 @@ window.onload = function () {
         });
     }
 }
+
