@@ -35,7 +35,7 @@
             </header>
 
             <div id="form" class="hidden" style="display: none;">
-                <hr/>
+                <hr />
                 <!-- Common parameters-->
                 <div>
                     <small>North-West corner coordinates (latitude, longitude)</small>
@@ -280,6 +280,29 @@
             </footer>
         </article>
     </dialog>
+
+    <dialog open id="modal-geojson" class="hidden">
+        <article>
+            <header>
+                <div style="display: flex; flex-direction: row; flex-wrap: nowrap;">
+                    <h4 style="margin: 0;">Add GeoJSON</h4>
+                </div>
+            </header>
+            <p>
+                Add a valid GeoJSON for Polygon or MultiPolygon below.
+            </p>
+            <textarea placeholder="Your GeoJSON..." id="geojson" rows="10"></textarea>
+
+            <footer>
+                <div role="group">
+                    <button class="secondary outline modal-close">Go back</button>
+                    <button id="op-geojson-submit">Process GeoJSON</button>
+                </div>
+            </footer>
+        </article>
+    </dialog>
+
+
     <dialog open id="modal-success" class="hidden">
         <article>
             <h4>✅ Success!</h4>
@@ -312,5 +335,6 @@
 <script src="js/sm_utils.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/main.js"></script>
+<script src="js/operations.js"></script>
 
 </html>

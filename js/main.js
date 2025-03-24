@@ -16,11 +16,13 @@ const form = document.getElementById("form");
 const dialog_keys = document.getElementById('modal-keys');
 const dialog_help = document.getElementById('modal-help');
 const dialog_about = document.getElementById('modal-about');
+const dialog_geojson = document.getElementById('modal-geojson');
 const dialog_success = document.getElementById('modal-success');
 const dialog_error = document.getElementById('modal-error');
 
 const op_draw = document.getElementById('op-draw');
 const op_geojson = document.getElementById('op-geojson');
+const op_geojson_submit = document.getElementById('op-geojson-submit');
 
 // Export handling
 async function generateExport(map, shademapKey) {
@@ -248,6 +250,7 @@ window.onload = function () {
     dialog_error.getElementsByClassName("modal-close")[0].onclick = function () { dialog_error.classList.add("hidden"); }
     dialog_help.getElementsByClassName("modal-close")[0].onclick = function () { dialog_help.classList.add("hidden"); }
     dialog_about.getElementsByClassName("modal-close")[0].onclick = function () { dialog_about.classList.add("hidden"); }
+    dialog_geojson.getElementsByClassName("modal-close")[0].onclick = function () { dialog_geojson.classList.add("hidden"); }
     Array.from(document.getElementsByClassName("help-modal")).forEach(el => el.onclick = function () { dialog_help.classList.remove("hidden"); })
     Array.from(document.getElementsByClassName("about-modal")).forEach(el => el.onclick = function () { dialog_about.classList.remove("hidden"); })
 
@@ -305,7 +308,12 @@ window.onload = function () {
             download_btn.onclick = function () { generateExport(map, shademapKey) };
 
             // > Draw polygon btn
-            op_draw.onclick = () => drawPolygon(map, form, subtitle);
+            op_draw.onclick = () => drawPolygon(map);
+
+            // > Add GeoJSON
+            op_geojson.onclick = () => dialog_geojson.classList.remove("hidden");
+            op_geojson_submit.onclick = () => processGeoJSON();
+            
 
             // Listeners for layer change (when user toggles accordion section)
             const layer_shadow = document.getElementById(LAYER_SHADOW);

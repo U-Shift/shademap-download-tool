@@ -107,56 +107,6 @@ async function loadScreen(shadeMap, coords, zoom, worldSize) {
     return;
 }
 
-const processPolygon = (e, map, draw, form, subtitle, subtitlePrevValue) => {
-    // Process coordinates of drawn polygon
-    console.log("processPolygon", e, e.features[0].geometry.coordinates[0]);
-    if (e.features.length && e.features[0].geometry.coordinates && e.features[0].geometry.coordinates[0].length>=3) {
-        let coordinates = e.features[0].geometry.coordinates[0];
-        console.log("coordinates", coordinates);
-
-        const lons = coordinates.map(c => c[0]);
-        const lats = coordinates.map(c => c[1]);
-        console.log("lons", lons)
-
-        console.log("COORDINARES", Math.max(...lats), Math.min(...lons))
-        console.log("COORDINARES", Math.min(...lats), Math.max(...lons))
-
-        document.getElementById("nw-lat").value = Math.max(...lats);
-        document.getElementById("nw-lon").value = Math.min(...lons);
-        document.getElementById("se-lat").value = Math.min(...lats);
-        document.getElementById("se-lon").value = Math.max(...lons);
-    }
-
-    // Disable draw
-    if (draw && map.hasControl(draw)) {
-        map.removeControl(draw);
-    }
-    document.getElementsByClassName("mapboxgl-canvas")[0].style.cursor=""; 
-    
-    // Show form and replace subtitle
-    subtitle.innerHTML = subtitlePrevValue;
-    form.classList.remove("hidden"); 
-}
-
-const drawPolygon = (map, form, subtitle) => {
-    // Hide form and show instructions
-    subtitlePrevValue = subtitle.innerHTML;
-    subtitle.innerHTML = "Draw the polygon by clicking on the map. Click twice to finish!";
-    form.classList.add("hidden");
-
-    // Enable draw mode
-    const draw = new MapboxDraw({
-        displayControlsDefault: false,
-        defaultMode: 'draw_polygon'
-    });
-    map.addControl(draw);
-    document.getElementsByClassName("mapboxgl-canvas")[0].style.cursor="crosshair";
-
-    // Listen to draw create event, to process it further
-    map.on('draw.create', (e) => processPolygon(e, map, draw, form, subtitle, subtitlePrevValue));
-}
-
-
 // TIFF file generation
 async function download(
     data, // Exported data to download
