@@ -1,0 +1,71 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html,
+body,
+#map {
+    height: 100%;
+}
+
+#loader {
+    display: none;
+    position: absolute;
+    z-index: 9999;
+    background-color: white;
+    color: #363636;
+    text-align: center;
+    line-height: 50px;
+
+    width: 45%;
+    height: auto;
+    top: 42.5%;
+    left: 27.5%;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+#loader p {
+    margin: 0;
+}
+
+#panel {
+    position: absolute;
+    left: 64px;
+    top: 64px;
+    padding: 8px;
+
+    max-height: 85vh;
+    overflow: scroll;
+
+    width: 35%;
+    max-width: 35%;
+    background-color: white;
+    border-radius: 8px;
+}
+
+#panel article {
+    margin: 0;
+    box-shadow: none;
+}
+
+dialog,
+#panel,
+#form {
+    -webkit-transition: all 0.2s ease-in-out 0s;
+    -moz-transition: all 0.2s ease-in-out 0s;
+    -ms-transition: all 0.2s ease-in-out 0s;
+    transition: all 0.2s ease-in-out 0s;
+
+    opacity: 1;
+    visibility: visible;
+}
+
+dialog.hidden,
+#panel.hidden,
+#form.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
