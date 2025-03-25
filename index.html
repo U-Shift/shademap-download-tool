@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="./css/index.css" />
 </head>
 
@@ -26,8 +27,8 @@
             <header>
                 <div style="display: flex; flex-direction: row; flex-wrap: nowrap; margin-bottom: 8px;">
                     <h4 style="margin: 0;">🗺️ ShadeMap download tool</h4>
-                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a> <a href="#"
-                            class="about-modal">🏛️ About</a></small>
+                    <small style="margin-left: auto;"><a href="#" class="help-modal secondary">ℹ️ Help</a> <a href="#"
+                            class="about-modal secondary">🏛️ About</a></small>
                 </div>
                 <small>
                     Loading map...
@@ -121,8 +122,8 @@
             <header>
                 <div style="display: flex; flex-direction: row; flex-wrap: nowrap;">
                     <h4 style="margin: 0;">🗺️ ShadeMap download tool</h4>
-                    <small style="margin-left: auto;"><a href="#" class="help-modal">ℹ️ Help</a> <a href="#"
-                            class="about-modal">🏛️ About</a></small>
+                    <small style="margin-left: auto;"><a href="#" class="help-modal secondary">ℹ️ Help</a> <a href="#"
+                            class="about-modal secondary">🏛️ About</a></small>
                 </div>
             </header>
             <p>
@@ -195,6 +196,14 @@
             <h5>File export</h5>
             <dl>
                 <dt>
+                    <b>Why am I getting more than one TIFF file per export?</b>
+                </dt>
+                <dd>
+                    Because of computer memory limitations, areas that exceed the browser processing capacity are divided into several TIFFs, each one aggregating the maximum number of subareas possible.
+                </dd>
+            </dl>
+            <dl>
+                <dt>
                     <b>What is the coordinate reference of the file generated? </b>
                 </dt>
                 <dd>
@@ -253,25 +262,21 @@
             </header>
 
             <p>
-                This web app is an adaptation of Ted Piotrowski's work, which provides example scripts to export
-                ShadeMap data.
+                The <b>🗺️ ShadeMap download tool</b> is an interactive tool that allows to export shadow and sun exposure layers from <a href="https://shademap.app/" target="_blank">ShadeMap</a> over a custom area, with a high level of detail.
             </p>
-            <a href="https://github.com/ted-piotrowski/shademap-examples" target="_blank">Original GitHub project</a>
-            <br /><br />
-
             <p>
-                The "🗺️ ShadeMap download tool" is an extension to this work, adapting it to provide an user interface
-                that allows a smooth experience through the browser, without editting any code, introducing also some
-                new features.
+                It aims to overcome the focus loss when exporting wide areas at ShadeMap online app. To achieve this, <b>🗺️ ShadeMap download tool</b> divides the selected area into smaller ones and for each captures the required layer with a higher level of focus, aggregating them automatically into a single TIFF file.
             </p>
-            <a href="https://github.com/gmatosferreira/shademap-examples" target="_blank">ShadeMap download tool GitHub
-                project</a>
-
-            <br /><br />
+            <p>
+                It is based on <a href="https://github.com/ted-piotrowski/shademap-examples" target="_blank">Ted Piotrowski's work</a>, which provides example scripts to export ShadeMap data, extending its scope to several layers and introducing an interactive user interface, that allows anyone to smoothly execute exports using their browser, without the need to download or edit any code. It also introduces batch exports, allowing to cover several timestamps in the same export operation.
+            </p>
             <p>
                 Developed by <a href="https://ushift.tecnico.ulisboa.pt" target="_blank">U-shift</a>, a research group
                 from Instituto Superior Técnico, Lisboa, Portugal.
             </p>
+        
+            <a href="https://github.com/U-Shift/shademap-download-tool" target="_blank"><i class="bi bi-github"></i> GitHub project</a>
+
 
             <footer>
                 <div role="group">
