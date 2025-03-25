@@ -1,5 +1,17 @@
 # 🗺️ ShadeMap download tool
 
+
+
+## Web app
+
+The **🗺️ ShadeMap download tool** can be used directly in the browser, without any installation required.
+
+https://ushift.tecnico.ulisboa.pt/apps/shademap
+
+
+
+## About
+
 The **🗺️ ShadeMap download tool** is an interactive tool that allows to export shadow and sun exposure layers from [ShadeMap](https://shademap.app/) over a custom area, with a high level of detail.
 
 It aims to overcome the focus loss when exporting wide areas at ShadeMap online app. To achieve this, **🗺️ ShadeMap download tool** divides the selected area into smaller ones and for each captures the required layer with a higher level of focus, aggregating them automatically into a single TIFF file.
