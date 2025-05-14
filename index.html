@@ -72,7 +72,7 @@
                             <input type="text" id="filename" placeholder="Default: stitch">
                         </div>
                         <div>
-                            <small>Zoom level</small>
+                            <small>Zoom level (see help for ℹ️)</small>
                             <input type="number" name="number" id="zoom" placeholder="Default: 15">
                         </div>
                     </fieldset>
@@ -186,11 +186,20 @@
             </dl>
             <dl>
                 <dt>
-                    <b>What is the iterations parameter, on the sun exposure form?</b>
+                    <b>What is the zoom level?</b>
                 </dt>
                 <dd>
-                    According to the ShadeMap documentation: "Number of discrete chunks to calculate shadows for between
-                    startDate and endDate. A larger number will provide more detail but take longer to compute."
+                    To generate the export, the defined area is divided into smaller ones, to capture the Shadow Map with a higher level of detail. 
+                    The zoom level will influence the area of these smaller squares, with a higher value reducing its size and increasing the level of detail. 
+                    15 is the default value and provides a high level of detail. 
+                </dd>
+            </dl>
+            <dl>
+                <dt>
+                    <b> What are the iteractions parameter, on the sun exposure form? </b>
+                </dt>
+                <dd>
+                    According to the ShadeMap documentation: "Number of discrete chunks to calculate shadows for between startDate and endDate. A larger number will provide more detail but take longer to compute." 
                 </dd>
             </dl>
 

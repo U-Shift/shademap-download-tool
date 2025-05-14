@@ -41,7 +41,12 @@ Once you fill the API keys and submit them, the tool will display the download f
 
 **What are the NW and SE coordinates for?**                
 
-> The export is generated over a square area, defined with the north-west and south-east corners coordinates, for a specific date and time, with the level of detail specified by the zoom level.                
+> The export is generated over a square area, defined with the north-west and south-east corners coordinates, for a specific date and time, with the level of detail specified by the zoom level.            
+
+**What is the zoom level?**
+
+> To generate the export, the defined area is divided into smaller ones, to capture the Shadow Map with a higher level of detail. The zoom level will influence the area of these smaller squares, with a higher value reducing its size and increasing the level of detail. 15 is the default value and provides a high level of detail. 
+
 
 **What is the iterations parameter, on the sun exposure form?**                
 
