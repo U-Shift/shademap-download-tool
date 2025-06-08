@@ -6,6 +6,8 @@
 
 The **🗺️ ShadeMap download tool** can be used directly in the browser, without any installation required.
 
+[![](/images/printscreen.png)](https://ushift.tecnico.ulisboa.pt/apps/shademap)
+
 https://ushift.tecnico.ulisboa.pt/apps/shademap
 
 
