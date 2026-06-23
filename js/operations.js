@@ -1,19 +1,4 @@
 // Draw polygon
-const bbox = (coordinates) => {
-    console.log("bbox", coordinates);
-    // Get bound box, given array of coordinates
-    const lons = coordinates.map(c => c[0]);
-    const lats = coordinates.map(c => c[1]);
-    console.log("lons", lons)
-
-    console.log("COORDINARES", Math.max(...lats), Math.min(...lons))
-    console.log("COORDINARES", Math.min(...lats), Math.max(...lons))
-    return {
-        nw: [Math.max(...lats), Math.min(...lons)],
-        se: [Math.min(...lats), Math.max(...lons)],
-    }
-}
-
 const processPolygon = (e, map, draw, subtitlePrevValue) => {
     // Process coordinates of drawn polygon
     console.log("processPolygon", e, e.features[0].geometry.coordinates[0]);
@@ -57,7 +42,71 @@ const drawPolygon = (map) => {
     map.on('draw.create', (e) => processPolygon(e, map, draw, subtitlePrevValue));
 }
 
-// GeoJSON
+// GeoJSON// javascript
+// Robust coordinate extraction from any GeoJSON object
+const isCoordinate = (v) => Array.isArray(v) && v.length >= 2 && typeof v[0] === 'number' && typeof v[1] === 'number';
+
+const collectCoordsFromArray = (arr, out) => {
+    if (!Array.isArray(arr)) return;
+    if (isCoordinate(arr)) {
+        out.push([arr[0], arr[1]]);
+        return;
+    }
+    for (const item of arr) collectCoordsFromArray(item, out);
+};
+
+const collectGeometry = (geom, out) => {
+    if (!geom) return;
+    if (geom.type === 'GeometryCollection') {
+        (geom.geometries || []).forEach(g => collectGeometry(g, out));
+    } else if (geom.coordinates !== undefined) {
+        collectCoordsFromArray(geom.coordinates, out);
+    }
+};
+
+const extractCoordinates = (geojson) => {
+    const out = [];
+    if (!geojson) return out;
+
+    const t = geojson.type;
+    if (t === 'FeatureCollection') {
+        (geojson.features || []).forEach(f => { if (f && f.geometry) collectGeometry(f.geometry, out); });
+    } else if (t === 'Feature') {
+        collectGeometry(geojson.geometry, out);
+    } else if (t === 'GeometryCollection') {
+        (geojson.geometries || []).forEach(g => collectGeometry(g, out));
+    } else if (t && geojson.coordinates !== undefined) {
+        collectCoordsFromArray(geojson.coordinates, out);
+    } else {
+        // Fallback: try to find coordinate arrays anywhere in the object
+        collectCoordsFromArray(geojson, out);
+    }
+
+    // keep only valid numeric lon/lat pairs
+    return out.filter(c => isFinite(c[0]) && isFinite(c[1]));
+};
+
+// bbox: accepts either an array of [lon,lat] pairs or a GeoJSON object
+const bbox = (coordinatesOrGeoJSON) => {
+    let coords = [];
+    if (Array.isArray(coordinatesOrGeoJSON) && coordinatesOrGeoJSON.length && isCoordinate(coordinatesOrGeoJSON[0])) {
+        coords = coordinatesOrGeoJSON;
+    } else {
+        coords = extractCoordinates(coordinatesOrGeoJSON);
+    }
+
+    if (!coords.length) return null;
+
+    const lons = coords.map(c => c[0]);
+    const lats = coords.map(c => c[1]);
+
+    return {
+        nw: [Math.max(...lats), Math.min(...lons)], // [lat, lon]
+        se: [Math.min(...lats), Math.max(...lons)], // [lat, lon]
+    };
+};
+
+// Updated processGeoJSON to accept any GeoJSON top-level structure
 const processGeoJSON = () => {
     let val = null;
     try {
@@ -66,26 +115,27 @@ const processGeoJSON = () => {
         //
     }
 
-    let coordinates = [];
-    if (val['type']==="MultiPolygon" && val['coordinates'] && val['coordinates'].length) coordinates = val['coordinates'].flat(2);
-    else if (val['type']==="Polygon" && val['coordinates'] && val['coordinates'].length) coordinates = val['coordinates'].flat();
+    const coordinates = extractCoordinates(val);
 
-
-    if (
-        !val || !coordinates || coordinates.length<2
-    ) {
-        let message = `The value provided is not a valid GeoGSON`;
+    if (!val || !coordinates || coordinates.length < 1) {
+        const message = `The value provided is not a valid GeoJSON`;
         dialog_error.getElementsByTagName("p")[0].innerHTML = message;
         dialog_error.classList.remove("hidden");
         throw new Error(message);
     }
 
+    const bb = bbox(coordinates);
+    if (!bb) {
+        const message = `Could not compute bounding box from the provided GeoJSON`;
+        dialog_error.getElementsByTagName("p")[0].innerHTML = message;
+        dialog_error.classList.remove("hidden");
+        throw new Error(message);
+    }
 
-    let bb = bbox(coordinates);        
     document.getElementById("nw-lat").value = bb['nw'][0];
     document.getElementById("nw-lon").value = bb['nw'][1];
     document.getElementById("se-lat").value = bb['se'][0];
     document.getElementById("se-lon").value = bb['se'][1];
 
     dialog_geojson.classList.add("hidden");
-}
+};
