@@ -6,6 +6,7 @@
     <title>ShadeMap download tool</title>
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css' type='text/css' />
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css' rel='stylesheet' />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -189,9 +190,11 @@
                     <b>What is the zoom level?</b>
                 </dt>
                 <dd>
-                    To generate the export, the defined area is divided into smaller ones, to capture the Shadow Map with a higher level of detail. 
-                    The zoom level will influence the area of these smaller squares, with a higher value reducing its size and increasing the level of detail. 
-                    15 is the default value and provides a high level of detail. 
+                    To generate the export, the defined area is divided into smaller ones, to capture the Shadow Map
+                    with a higher level of detail.
+                    The zoom level will influence the area of these smaller squares, with a higher value reducing its
+                    size and increasing the level of detail.
+                    15 is the default value and provides a high level of detail.
                 </dd>
             </dl>
             <dl>
@@ -199,7 +202,8 @@
                     <b> What are the iteractions parameter, on the sun exposure form? </b>
                 </dt>
                 <dd>
-                    According to the ShadeMap documentation: "Number of discrete chunks to calculate shadows for between startDate and endDate. A larger number will provide more detail but take longer to compute." 
+                    According to the ShadeMap documentation: "Number of discrete chunks to calculate shadows for between
+                    startDate and endDate. A larger number will provide more detail but take longer to compute."
                 </dd>
             </dl>
 
@@ -209,7 +213,8 @@
                     <b>Why am I getting more than one TIFF file per export?</b>
                 </dt>
                 <dd>
-                    Because of computer memory limitations, areas that exceed the browser processing capacity are divided into several TIFFs, each one aggregating the maximum number of subareas possible.
+                    Because of computer memory limitations, areas that exceed the browser processing capacity are
+                    divided into several TIFFs, each one aggregating the maximum number of subareas possible.
                 </dd>
             </dl>
             <dl>
@@ -272,20 +277,55 @@
             </header>
 
             <p>
-                The <b>🗺️ ShadeMap download tool</b> is an interactive tool that allows to export shadow and sun exposure layers from <a href="https://shademap.app/" target="_blank">ShadeMap</a> over a custom area, with a high level of detail.
+                The <b>🗺️ ShadeMap download tool</b> is an interactive tool that allows to export shadow and sun
+                exposure layers from <a href="https://shademap.app/" target="_blank">ShadeMap</a> over a custom area,
+                with a high level of detail.
             </p>
             <p>
-                It aims to overcome the focus loss when exporting wide areas at ShadeMap online app. To achieve this, <b>🗺️ ShadeMap download tool</b> divides the selected area into smaller ones and for each captures the required layer with a higher level of focus, aggregating them automatically into a single TIFF file.
+                It aims to overcome the focus loss when exporting wide areas at ShadeMap online app. To achieve this,
+                <b>🗺️ ShadeMap download tool</b> divides the selected area into smaller ones and for each captures the
+                required layer with a higher level of focus, aggregating them automatically into a single TIFF file.
             </p>
             <p>
-                It is based on <a href="https://github.com/ted-piotrowski/shademap-examples" target="_blank">Ted Piotrowski's work</a>, which provides example scripts to export ShadeMap data, extending its scope to several layers and introducing an interactive user interface, that allows anyone to smoothly execute exports using their browser, without the need to download or edit any code. It also introduces batch exports, allowing to cover several timestamps in the same export operation.
+                It is based on <a href="https://github.com/ted-piotrowski/shademap-examples" target="_blank">Ted
+                    Piotrowski's work</a>, which provides example scripts to export ShadeMap data, extending its scope
+                to several layers and introducing an interactive user interface, that allows anyone to smoothly execute
+                exports using their browser, without the need to download or edit any code. It also introduces batch
+                exports, allowing to cover several timestamps in the same export operation.
             </p>
+
+            <a href="https://github.com/U-Shift/shademap-download-tool" target="_blank"><i class="bi bi-github"></i>
+                GitHub project</a>
+
+            <h5>Authors</h5>
+            <p class="flex items-center gap-2">
+                Gonçalo F. Matos
+                <span class="text-xs text-muted-foreground">(Author, Maintainer)</span>
+                <a href="https://orcid.org/0009-0001-3489-1732" target="_blank" class="text-[#A6CE39] hover:opacity-80"
+                    aria-label="ORCID for Gonçalo F. Matos">
+                    <i class="fab fa-orcid"></i>
+                </a>
+            </p>
+            <p class="flex items-center gap-2">
+                Rosa Félix
+                <span class="text-xs text-muted-foreground">(Author)</span>
+                <a href="https://orcid.org/0000-0002-5642-6006" target="_blank" class="text-[#A6CE39] hover:opacity-80"
+                    aria-label="ORCID for Rosa Félix">
+                    <i class="fab fa-orcid"></i>
+                </a>
+            </p>
+
+            <h5>Acknowledgement</h5>
             <p>
-                Developed by <a href="https://ushift.tecnico.ulisboa.pt" target="_blank">U-shift</a>, a research group
-                from Instituto Superior Técnico, Lisboa, Portugal.
+                Developed by <a href="https://ushift.tecnico.ulisboa.pt" target="_blank"
+                    class="text-primary hover:underline">U-Shift</a>, a research group from Instituto Superior Técnico,
+                Lisboa,
+                Portugal.
             </p>
-        
-            <a href="https://github.com/U-Shift/shademap-download-tool" target="_blank"><i class="bi bi-github"></i> GitHub project</a>
+
+            <a href="https://ushift.tecnico.ulisboa.pt" target="_blank" class="block w-48">
+                <img src="images/logo_acknowledgement.png" alt="U-shift research group" class="w-full object-contain" />
+            </a>
 
 
             <footer>

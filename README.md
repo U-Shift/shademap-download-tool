@@ -20,8 +20,16 @@ It aims to overcome the focus loss when exporting wide areas at ShadeMap online 
 
 It is based on [Ted Piotrowski's work](https://github.com/ted-piotrowski/shademap-examples), which provides example scripts to export ShadeMap data, extending its scope to several layers and introducing an interactive user interface, that allows anyone to smoothly execute exports using their browser, without the need to download or edit any code. It also introduces batch exports, allowing to cover several timestamps in the same export operation.
 
-Developed by [U-shift](https://ushift.tecnico.ulisboa.pt), a research group from Instituto Superior Técnico, Lisboa, Portugal.
+## Acknowledgement
 
+**🗺️ ShadeMap download tool** is developed and maintained by
+[U-Shift](https://ushift.tecnico.ulisboa.pt) urban mobility research
+group, part of [CERIS](https://ceris.pt/) research unit, at [Instituto
+Superior Técnico](https://tecnico.ulisboa.pt/pt/), Lisbon, Portugal.
+
+<br/>
+
+<img src="images/logo_acknowledgement.png" width="75%">
 
 
 ## How to use it?
