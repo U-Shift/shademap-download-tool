@@ -1,13 +1,24 @@
-cff-version: 1.0
-message: "If you use this software, please cite it as below."
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: ShadeMap download tool
+message: 'If you use this software, please cite it as below.'
+type: software
 authors:
-- family-names: "F. Matos"
-  given-names: "Gonçalo"
-  orcid: "https://orcid.org/0009-0001-3489-1732"
-- family-names: "Félix"
-  given-names: "Rosa"
-  orcid: "https://orcid.org/0000-0002-5642-6006"
-title: "ShadeMap download tool"
-version: 1.1
-date-released: 2025-06-08
-url: "https://github.com/U-Shift/shademap-download-tool"
+  - family-names: F. Matos
+    given-names: Gonçalo
+    orcid: 'https://orcid.org/0009-0001-3489-1732'
+  - family-names: Félix
+    given-names: Rosa
+    orcid: 'https://orcid.org/0000-0002-5642-6006'
+repository-code: 'https://github.com/U-Shift/shademap-download-tool'
+url: 'https://ushift.pt/apps/shademap'
+abstract: " The \U0001F5FA️ ShadeMap download tool is an interactive tool that allows to export shadow and sun exposure layers from ShadeMap over a custom area, with a high level of detail. "
+keywords:
+  - Shademap
+  - Web tool
+  - Tools for data
+license: GPL-3.0
+version: '1.1'
+date-released: '2026-06-24'
