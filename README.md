@@ -47,7 +47,7 @@ Refer to [FAQ.md](./FAQ.md) for frequently asked questions and answers about the
 
 ## Citing this work
 
-Matos, G. F., & Félix, R. (2026). ShadeMap download tool. https://doi.org/10.5281/zenodo.20843865
+Matos, G. F., & Félix, R. (2026). ShadeMap download tool. https://doi.org/10.5281/zenodo.20843864
 
 ```tex
 @software{,
@@ -56,7 +56,7 @@ Matos, G. F., & Félix, R. (2026). ShadeMap download tool. https://doi.org/10.52
     month = jun,
     title = {{ShadeMap download tool}},
     url = {https://github.com/U-Shift/shademap-download-tool},
-    doi = {10.5281/zenodo.20843865},
+    doi = {10.5281/zenodo.20843864},
     version = {1.1},
     year = {2026}
 }
