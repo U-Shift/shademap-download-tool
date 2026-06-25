@@ -50,7 +50,7 @@ Refer to [FAQ.md](./FAQ.md) for frequently asked questions and answers about the
 Matos, G. F., & Félix, R. (2026). ShadeMap download tool. https://doi.org/10.5281/zenodo.20843865
 
 ```tex
-@software{F_Matos_ShadeMap_download_tool_2026,
+@software{,
     author = {F. Matos, Gonçalo and Félix, Rosa},
     license = {GPL-3.0},
     month = jun,
