@@ -20,17 +20,6 @@ It aims to overcome the focus loss when exporting wide areas at ShadeMap online 
 
 It is based on [Ted Piotrowski's work](https://github.com/ted-piotrowski/shademap-examples), which provides example scripts to export ShadeMap data, extending its scope to several layers and introducing an interactive user interface, that allows anyone to smoothly execute exports using their browser, without the need to download or edit any code. It also introduces batch exports, allowing to cover several timestamps in the same export operation.
 
-## Acknowledgement
-
-**🗺️ ShadeMap download tool** is developed and maintained by
-[U-Shift](https://ushift.tecnico.ulisboa.pt) urban mobility research
-group, part of [CERIS](https://ceris.pt/) research unit, at [Instituto
-Superior Técnico](https://tecnico.ulisboa.pt/pt/), Lisbon, Portugal.
-
-<br/>
-
-<img src="images/logo_acknowledgement.png" width="75%">
-
 
 ## How to use it?
 
@@ -47,41 +36,38 @@ Once you fill the API keys and submit them, the tool will display the download f
 
 ## Help
 
-### Form
-
-**What are the NW and SE coordinates for?**                
-
-> The export is generated over a square area, defined with the north-west and south-east corners coordinates, for a specific date and time, with the level of detail specified by the zoom level.            
-
-**What is the zoom level?**
-
-> To generate the export, the defined area is divided into smaller ones, to capture the Shadow Map with a higher level of detail. The zoom level will influence the area of these smaller squares, with a higher value reducing its size and increasing the level of detail. 15 is the default value and provides a high level of detail. 
+Refer to [FAQ.md](./FAQ.md) for frequently asked questions and answers about the tool.
 
 
-**What is the iterations parameter, on the sun exposure form?**                
+## Authors
 
->  According to the ShadeMap documentation: "Number of discrete chunks to calculate shadows for between startDate and endDate. A larger number will provide more detail but take longer to compute."                
+[Gonçalo F. Matos](https://orcid.org/0009-0001-3489-1732) (Author, Maintainer)
 
-### File export
+[Rosa Félix](https://orcid.org/0000-0002-5642-6006) (Author)
 
-**Why am I getting more than one TIFF file per export?**                
+## Citing this work
 
-> Because of computer memory limitations, areas that  exceed the browser processing capacity are divided into several TIFFs,  each one aggregating the maximum number of subareas possible.                
+F. Matos, G., & Félix, R. (2026). ShadeMap download tool (Version 1.1) [Computer software]. https://github.com/U-Shift/shademap-download-tool
 
-**What is the coordinate reference of the file generated?**                 
+```tex
+@software{,
+    author = {F. Matos, Gonçalo and Félix, Rosa},
+    license = {GPL-3.0},
+    month = jun,
+    title = {{ShadeMap download tool}},
+    url = {https://github.com/U-Shift/shademap-download-tool},
+    version = {1.1},
+    year = {2026}
+}
+```
 
->  The file is generated according to the WGS 84 coordinate reference system (EPSG:4326).                
+## Acknowledgement
 
-**How can I interpret the values of the file generated?**                
+**🗺️ ShadeMap download tool** is developed and maintained by
+[U-Shift](https://ushift.tecnico.ulisboa.pt) urban mobility research
+group, part of [CERIS](https://ceris.pt/) research unit, at [Instituto
+Superior Técnico](https://tecnico.ulisboa.pt/pt/), Lisbon, Portugal.
 
->  Shadows are exported in a binary system: 0 for shadows, 255 for sun. Sun light exposure values range from 0 to 240, and can be converted to the total minutes of sun exposure by multiplying this value by 6.                                    
+<br/>
 
-### Privacy
-
-**Is it safe to check the box to store the API credentials?**                 
-
-> The API key is stored on the local storage of your browser, in plain text. It is not sent to other services rather than the Mapbox and ShadeMap APIs. The APIs are accessed directly from your browser, without any brokers.                
-
-**Can I delete the credentials, once stored?**                
-
-> Yes, just reload the page, and enter the application again, but this time unchecking the box to save credentials. Once you access after this, they will be removed.                
+<img src="images/logo_acknowledgement.png" width="75%">
