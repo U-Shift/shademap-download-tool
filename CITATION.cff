@@ -12,6 +12,9 @@ authors:
   - family-names: Félix
     given-names: Rosa
     orcid: 'https://orcid.org/0000-0002-5642-6006'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.20843865
 repository-code: 'https://github.com/U-Shift/shademap-download-tool'
 url: 'https://ushift.pt/apps/shademap'
 abstract: " The \U0001F5FA️ ShadeMap download tool is an interactive tool that allows to export shadow and sun exposure layers from ShadeMap over a custom area, with a high level of detail. "
