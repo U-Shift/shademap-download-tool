@@ -47,15 +47,16 @@ Refer to [FAQ.md](./FAQ.md) for frequently asked questions and answers about the
 
 ## Citing this work
 
-F. Matos, G., & Félix, R. (2026). ShadeMap download tool (Version 1.1) [Computer software]. https://github.com/U-Shift/shademap-download-tool
+Matos, G. F., & Félix, R. (2026). ShadeMap download tool. https://doi.org/10.5281/zenodo.20843865
 
 ```tex
-@software{,
+@software{F_Matos_ShadeMap_download_tool_2026,
     author = {F. Matos, Gonçalo and Félix, Rosa},
     license = {GPL-3.0},
     month = jun,
     title = {{ShadeMap download tool}},
     url = {https://github.com/U-Shift/shademap-download-tool},
+    doi = {10.5281/zenodo.20843865},
     version = {1.1},
     year = {2026}
 }
